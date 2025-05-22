@@ -7,7 +7,7 @@ import {
 
 @Entity("events")
 export class Event {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column()

@@ -2,11 +2,9 @@ import { z } from "zod";
 
 export const EventSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  eventTime: z
-    .string()
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: "Invalid ISO date format",
-    }),
+  eventTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid ISO date format",
+  }),
   reminderMinutesBefore: z.number().min(1).optional().default(15),
 });
 
