@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
-import { appDataSource } from '../../data-source';
 import { ZodError } from 'zod';
-import { Device } from './device.entity';
 import { RegisterDeviceBody } from './device.schema';
+import { appDataSource, Device } from '../../../../shared/src';
 
 export const registerDevice = async (
 	req: Request<Record<string, unknown>, Record<string, unknown>, RegisterDeviceBody>,

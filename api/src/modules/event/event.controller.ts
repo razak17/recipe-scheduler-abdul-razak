@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { Event } from './event.entity';
+import dotenv from 'dotenv';
 import { ZodError } from 'zod';
-import { appDataSource } from '../../data-source';
+import { appDataSource, Event } from '../../../../shared/src';
 import {
 	CreateEventBody,
 	DeleteEventParams,
@@ -9,6 +9,10 @@ import {
 	UpdateEventBody,
 	UpdateEventParams
 } from './event.schema';
+import { scheduleReminder } from '../../services/reminderQueue';
+
+dotenv.config();
+const DEFAULT_REMINDER_MINUTES = parseInt(process.env.REMINDER_LEAD_MINUTES || '15');
 
 export const createEvent = async (
 	req: Request<Record<string, unknown>, Record<string, unknown>, CreateEventBody>,
@@ -27,10 +31,20 @@ export const createEvent = async (
 			title,
 			eventTime: new Date(eventTime),
 			userId,
-			reminderMinutesBefore: reminderMinutesBefore || 15
+			reminderMinutesBefore: reminderMinutesBefore || DEFAULT_REMINDER_MINUTES
 		});
 
 		await eventRepository.save(event);
+
+		// Schedule reminder
+		await scheduleReminder(
+			event.id,
+			event.userId,
+			event.title,
+			event.eventTime,
+			event.reminderMinutesBefore
+		);
+
 		return res.status(201).json(event);
 	} catch (error) {
 		if (error instanceof ZodError) {
@@ -83,8 +97,19 @@ export const updateEvent = async (
 		}
 
 		await eventRepository.update(id, updateData);
-
 		const updatedEvent = await eventRepository.findOne({ where: { id } });
+
+		if (updatedEvent && (updateData.eventTime || updateData.reminderMinutesBefore !== undefined)) {
+			// Reschedule reminder if time or reminder minutes changed
+			await scheduleReminder(
+				updatedEvent.id,
+				updatedEvent.userId,
+				updatedEvent.title,
+				updatedEvent.eventTime,
+				updatedEvent.reminderMinutesBefore
+			);
+		}
+
 		return res.json(updatedEvent);
 	} catch (error) {
 		if (error instanceof ZodError) {

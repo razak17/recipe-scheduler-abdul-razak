@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { appDataSource } from './data-source';
 import eventRoutes from './modules/event/event.route';
 import deviceRoutes from './modules/device/device.route';
+import { appDataSource } from '../../shared/src';
 
 const app = express();
 
