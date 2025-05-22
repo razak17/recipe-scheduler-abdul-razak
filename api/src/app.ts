@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { appDataSource } from "./data-source";
+import eventRoutes from "./modules/event/entity.route";
 
 const app = express();
 
@@ -13,9 +14,12 @@ app.get("/health", (_, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.use("/api", eventRoutes);
+
 export const initializeApp = async () => {
   try {
-    appDataSource.initialize()
+    appDataSource
+      .initialize()
       .then(() => {
         console.log("Data Source has been initialized!");
       })
