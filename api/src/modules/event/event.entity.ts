@@ -1,27 +1,22 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
-@Entity("events")
+@Entity('events')
 export class Event {
-  @PrimaryGeneratedColumn()
-  id: string;
+	@PrimaryGeneratedColumn()
+	id: string;
 
-  @Column()
-  userId: string;
+	@Column()
+	userId: string;
 
-  @Column()
-  title: string;
+	@Column()
+	title: string;
 
-  @Column()
-  eventTime: Date;
+	@Column()
+	eventTime: Date;
 
-  @CreateDateColumn()
-  createdAt: Date;
+	@CreateDateColumn()
+	createdAt: Date;
 
-  @Column({ default: 15 })
-  reminderMinutesBefore: number;
+	@Column({ default: 15 })
+	reminderMinutesBefore: number;
 }
