@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { appDataSource } from './data-source';
 import eventRoutes from './modules/event/entity.route';
+import deviceRoutes from './modules/device/device.route';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/health', (_, res) => {
 });
 
 app.use('/api', eventRoutes);
+app.use('/api', deviceRoutes);
 
 export const initializeApp = async () => {
 	try {
