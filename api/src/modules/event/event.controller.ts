@@ -32,3 +32,23 @@ export const createEvent = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to create event" });
   }
 };
+
+export const getEvents = async (req: Request, res: Response) => {
+  try {
+    const userId = req.query.userId as string;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    const eventRepository = appDataSource.getRepository(Event);
+    const events = await eventRepository.find({
+      where: { userId },
+      order: { eventTime: "ASC" },
+    });
+
+    return res.json(events);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to fetch events" });
+  }
+};
