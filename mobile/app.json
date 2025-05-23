@@ -20,11 +20,11 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+        "expo-router",
       [
         "expo-splash-screen",
         {
@@ -37,6 +37,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "https://8f01-154-161-183-81.ngrok-free.app/api",
+      "eas": {
+        "projectId": "e4f96804-7084-4d5e-be40-30be33277590"
+      }
     }
   }
 }

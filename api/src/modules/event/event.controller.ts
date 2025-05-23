@@ -9,7 +9,7 @@ import {
 	UpdateEventBody,
 	UpdateEventParams
 } from './event.schema';
-import { scheduleReminder } from '../../services/reminderQueue';
+// import { scheduleReminder } from '../../services/reminderQueue';
 
 dotenv.config();
 const DEFAULT_REMINDER_MINUTES = parseInt(process.env.REMINDER_LEAD_MINUTES || '15');
@@ -37,13 +37,13 @@ export const createEvent = async (
 		await eventRepository.save(event);
 
 		// Schedule reminder
-		await scheduleReminder(
-			event.id,
-			event.userId,
-			event.title,
-			event.eventTime,
-			event.reminderMinutesBefore
-		);
+		// await scheduleReminder(
+		// 	event.id,
+		// 	event.userId,
+		// 	event.title,
+		// 	event.eventTime,
+		// 	event.reminderMinutesBefore
+		// );
 
 		return res.status(201).json(event);
 	} catch (error) {
@@ -101,13 +101,13 @@ export const updateEvent = async (
 
 		if (updatedEvent && (updateData.eventTime || updateData.reminderMinutesBefore !== undefined)) {
 			// Reschedule reminder if time or reminder minutes changed
-			await scheduleReminder(
-				updatedEvent.id,
-				updatedEvent.userId,
-				updatedEvent.title,
-				updatedEvent.eventTime,
-				updatedEvent.reminderMinutesBefore
-			);
+			// await scheduleReminder(
+			// 	updatedEvent.id,
+			// 	updatedEvent.userId,
+			// 	updatedEvent.title,
+			// 	updatedEvent.eventTime,
+			// 	updatedEvent.reminderMinutesBefore
+			// );
 		}
 
 		return res.json(updatedEvent);
