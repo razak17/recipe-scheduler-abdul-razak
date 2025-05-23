@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 
 @Entity('events')
 export class Event {
-	@PrimaryGeneratedColumn()
+	@PrimaryGeneratedColumn("uuid")
 	id: string;
 
 	@Column()

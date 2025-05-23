@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+ # API Service - Development Mode
+ api:
+  build:
+   context: .
+   dockerfile: api/dev.Dockerfile
+  container_name: recipe-scheduler-api-dev
+  env_file: ./.env
+  ports:
+   - '${NODE_LOCAL_PORT:-8000}:${NODE_DOCKER_PORT:-8000}'
+   - '9229:9229'
+  environment:
+   - PORT=${NODE_LOCAL_PORT:-8000}
+   - NODE_ENV=development
+  volumes:
+   - ./api/src:/app/api/src
+   - ./shared:/app/shared
+   - db-data:/app/data
+   - api-node-modules:/app/api/node_modules
+  depends_on:
+   - redis
+  networks:
+   - app-network
+  command: npm run dev
+  restart: unless-stopped
+
+ # Worker Service - Development Mode
+ worker:
+  build:
+   context: .
+   dockerfile: worker/dev.Dockerfile
+  container_name: recipe-scheduler-worker-dev
+  env_file: ./.env
+  volumes:
+   - ./worker/src:/app/worker/src
+   - ./shared:/app/shared
+   - db-data:/app/data
+   - worker-node-modules:/app/worker/node_modules
+  depends_on:
+   - redis
+  networks:
+   - app-network
+  command: npm run dev
+  restart: unless-stopped
+
+ # Redis Service (for BullMQ)
+ redis:
+  image: redis:alpine
+  container_name: cooking-scheduler-redis-dev
+  ports:
+   - '6379:6379'
+  volumes:
+   - redis-data:/data
+  networks:
+   - app-network
+  restart: unless-stopped
+
+networks:
+ app-network:
+  driver: bridge
+
+volumes:
+ db-data:
+ redis-data:
+ api-node-modules:
+ worker-node-modules:

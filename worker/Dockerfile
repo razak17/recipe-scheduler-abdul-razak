@@ -22,11 +22,9 @@ COPY worker/src ./src
 RUN npm run build
 
 
-FROM node:22.1.0-alpine
+FROM node:22.1.0
 
 WORKDIR /app
-
-RUN apk add --no-cache python3 make
 
 COPY worker/package.json worker/package-lock.json ./
 

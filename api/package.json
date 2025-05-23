@@ -4,7 +4,8 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "node build/server.js",
-		"dev": "nodemon -L src/server.ts --watch \"src/**/*.{ts,js}\"",
+		"dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+		"debug": "nodemon --watch src --inspect=0.0.0.0:9229 --exec 'ts-node' src/server.ts",
 		"test": "jest"
 	},
 	"keywords": [],
