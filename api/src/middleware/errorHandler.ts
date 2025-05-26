@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { logError } from '../services/logger.service';
 
 export class ApiError extends Error {
 	statusCode: number;
@@ -35,6 +36,12 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 			message: 'Database query error'
 		});
 	}
+
+  logError('API Error', err, {
+    path: req.path,
+    method: req.method,
+    requestId: req.headers['x-request-id']
+  });
 
 	return res.status(500).json({
 		status: 'error',

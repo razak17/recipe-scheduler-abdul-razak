@@ -8,6 +8,7 @@ import deviceRoutes from './modules/device/device.route';
 import { appDataSource } from '../../shared/src';
 import { errorHandler } from './middleware/errorHandler';
 import { checkDatabaseConnection } from './services/health.service';
+import { errorLogger, requestLogger } from './middleware/loggingMiddleware';
 
 const app = express();
 
@@ -16,6 +17,8 @@ dotenv.config();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+app.use(requestLogger as any);
 
 const apiLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
@@ -49,6 +52,7 @@ app.get('/health', async (_, res) => {
 app.use('/api', eventRoutes);
 app.use('/api', deviceRoutes);
 
+app.use(errorLogger as any);
 app.use(errorHandler as any);
 
 export const initializeApp = async () => {
