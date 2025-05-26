@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { ZodError } from 'zod';
 import { appDataSource, Event } from '../../../../shared/src';
 import {
 	CreateEventBody,
@@ -9,21 +8,27 @@ import {
 	UpdateEventBody,
 	UpdateEventParams
 } from './event.schema';
+import { ApiError, asyncHandler } from '../../middleware/errorHandler';
 // import { scheduleReminder } from '../../services/reminderQueue';
+
+export interface GetEventParamsWithPagination extends GetEventParams {
+	page?: string;
+	limit?: string;
+}
 
 dotenv.config();
 const DEFAULT_REMINDER_MINUTES = parseInt(process.env.REMINDER_LEAD_MINUTES || '15');
 
-export const createEvent = async (
-	req: Request<Record<string, unknown>, Record<string, unknown>, CreateEventBody>,
-	res: Response
-): Promise<any> => {
-	try {
+export const createEvent = asyncHandler(
+	async (
+		req: Request<Record<string, unknown>, Record<string, unknown>, CreateEventBody>,
+		res: Response
+	) => {
 		const { title, eventTime, reminderMinutesBefore } = req.body;
 		const userId = req.query.userId as string;
 
 		if (!userId) {
-			return res.status(400).json({ error: 'userId is required' });
+			throw new ApiError(400, 'userId is required');
 		}
 
 		const eventRepository = appDataSource.getRepository(Event);
@@ -46,42 +51,49 @@ export const createEvent = async (
 		// );
 
 		return res.status(201).json(event);
-	} catch (error) {
-		if (error instanceof ZodError) {
-			return res.status(400).json({ error: error.errors });
-		}
-		return res.status(500).json({ error: 'Failed to create event' });
 	}
-};
+);
 
-export const getEvents = async (
-	req: Request<GetEventParams, Record<string, unknown>, Record<string, unknown>>,
-	res: Response
-): Promise<any> => {
-	try {
+export const getEvents = asyncHandler(
+	async (
+		req: Request<GetEventParamsWithPagination, Record<string, unknown>, Record<string, unknown>>,
+		res: Response
+	) => {
 		const userId = req.query.userId as string;
+		const page = parseInt(req.query.page as string) || 1;
+		const limit = parseInt(req.query.limit as string) || 10;
+		const skip = (page - 1) * limit;
 
 		if (!userId) {
-			return res.status(400).json({ error: 'userId is required' });
+			throw new ApiError(400, 'userId is required');
 		}
 
 		const eventRepository = appDataSource.getRepository(Event);
-		const events = await eventRepository.find({
+
+		const [events, total] = await eventRepository.findAndCount({
 			where: { userId },
-			order: { eventTime: 'ASC' }
+			order: { eventTime: 'ASC' },
+			skip,
+			take: limit
 		});
 
-		return res.json(events);
-	} catch (error) {
-		return res.status(500).json({ error: 'Failed to fetch events' });
+		return res.json({
+			events,
+			pagination: {
+				total,
+				page,
+				limit,
+				pages: Math.ceil(total / limit)
+			}
+		});
 	}
-};
+);
 
-export const updateEvent = async (
-	req: Request<UpdateEventParams, Record<string, unknown>, UpdateEventBody>,
-	res: Response
-): Promise<any> => {
-	try {
+export const updateEvent = asyncHandler(
+	async (
+		req: Request<UpdateEventParams, Record<string, unknown>, UpdateEventBody>,
+		res: Response
+	) => {
 		const { id } = req.params;
 		const updateData = req.body;
 
@@ -89,7 +101,7 @@ export const updateEvent = async (
 		const event = await eventRepository.findOne({ where: { id } });
 
 		if (!event) {
-			return res.status(404).json({ error: 'Event not found' });
+			throw new ApiError(404, 'Event not found');
 		}
 
 		if (updateData.eventTime) {
@@ -111,30 +123,23 @@ export const updateEvent = async (
 		}
 
 		return res.json(updatedEvent);
-	} catch (error) {
-		if (error instanceof ZodError) {
-			return res.status(400).json({ error: error.errors });
-		}
-		return res.status(500).json({ error: 'Failed to update event' });
 	}
-};
+);
 
-export const deleteEvent = async (
-	req: Request<DeleteEventParams, Record<string, unknown>, Record<string, unknown>>,
-	res: Response
-): Promise<any> => {
-	try {
+export const deleteEvent = asyncHandler(
+	async (
+		req: Request<DeleteEventParams, Record<string, unknown>, Record<string, unknown>>,
+		res: Response
+	) => {
 		const { id } = req.params;
 		const eventRepository = appDataSource.getRepository(Event);
 
 		const event = await eventRepository.findOne({ where: { id } });
 		if (!event) {
-			return res.status(404).json({ error: 'Event not found' });
+			throw new ApiError(404, 'Event not found');
 		}
 
 		await eventRepository.delete(id);
 		return res.status(204).send();
-	} catch (error) {
-		return res.status(500).json({ error: 'Failed to delete event' });
 	}
-};
+);
