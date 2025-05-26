@@ -1,12 +1,15 @@
+import dotenv from 'dotenv';
 import { initializeApp } from './app';
 
 const PORT = process.env.PORT || 8000;
+
+dotenv.config();
 
 const startServer = async () => {
 	try {
 		const app = await initializeApp();
 		app.listen(PORT, () => {
-			console.log(`Server running on port ${PORT}`);
+			console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV}`);
 		});
 	} catch (error) {
 		console.error('Failed to start server:', error);

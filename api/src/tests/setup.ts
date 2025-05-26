@@ -1,23 +1,22 @@
 import dotenv from 'dotenv';
-import { appTestDataSource } from '../../../shared/src';
+import { dataSource } from '../config/database';
 
 dotenv.config({ path: '.env.test' });
 
 beforeAll(async () => {
-  if (!appTestDataSource.isInitialized) {
-    await appTestDataSource.initialize();
-  }
+	if (!dataSource.isInitialized) {
+		await dataSource.initialize();
+	}
 
-  const entities = appTestDataSource.entityMetadatas;
-  for (const entity of entities) {
-    const repository = appTestDataSource.getRepository(entity.name);
-    await repository.clear();
-  }
+	const entities = dataSource.entityMetadatas;
+	for (const entity of entities) {
+		const repository = dataSource.getRepository(entity.name);
+		await repository.clear();
+	}
 });
 
 afterAll(async () => {
-  if (appTestDataSource.isInitialized) {
-    await appTestDataSource.destroy();
-  }
+	if (dataSource.isInitialized) {
+		await dataSource.destroy();
+	}
 });
-

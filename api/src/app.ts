@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import eventRoutes from './modules/event/event.route';
@@ -12,8 +11,6 @@ import { errorLogger, requestLogger } from './middleware/loggingMiddleware';
 import { dataSource } from './config/database';
 
 const app = express();
-
-dotenv.config();
 
 app.use(helmet());
 app.use(cors());
