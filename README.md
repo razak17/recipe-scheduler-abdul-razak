@@ -145,3 +145,30 @@ The application meets all the requirements specified:
 - The frontend allows event management and theme switching
 - The entire solution can be started with one `docker compose up` command
 
+
+## Tests (api)
+
+```bash
+cd api
+cp .env.example .env.tes
+```
+
+Change NODE_ENV in .env.test to from `development` to `test`
+
+Run all tests with:
+
+```bash
+npm run test
+```
+
+Run integation tests with:
+
+```bash
+npm run test:integration
+```
+
+Debug your tests using Chrome DevTools or your IDE's debugger with:
+
+```bash
+npm run test:debug
+```

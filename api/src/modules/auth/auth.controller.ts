@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { appDataSource } from '../../../../shared/src';
 import {
 	RegisterUserBody,
 	LoginUserBody,
@@ -12,7 +11,9 @@ import {
 } from './auth.schema';
 import { ApiError, asyncHandler } from '../../middleware/errorHandler';
 import { logInfo, logError } from '../../services/logger.service';
-import { User } from '../../../../shared/src/modules/user/user.model';
+import { User } from '../../../../shared/src/modules/user/user.entity';
+import crypto from 'crypto';
+import { dataSource } from '../../config/database';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret_change_this_in_production';
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d';
@@ -27,7 +28,7 @@ export const registerUser = asyncHandler(
 
 			logInfo('User registration attempt', { email });
 
-			const userRepository = appDataSource.getRepository(User);
+			const userRepository = dataSource.getRepository(User);
 
 			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -53,7 +54,7 @@ export const registerUser = asyncHandler(
 
 			await userRepository.save(user);
 
-			const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+			const token = jwt.sign({ userId: user.id }, JWT_SECRET as string, { expiresIn: JWT_EXPIRY as any });
 
 			logInfo('User registered successfully', { userId: user.id });
 
@@ -90,7 +91,7 @@ export const loginUser = asyncHandler(
 
 			logInfo('User login attempt', { email });
 
-			const userRepository = appDataSource.getRepository(User);
+			const userRepository = dataSource.getRepository(User);
 
 			const user = await userRepository.findOne({ where: { email } });
 			if (!user) {
@@ -104,7 +105,7 @@ export const loginUser = asyncHandler(
 				throw new ApiError(401, 'Invalid credentials');
 			}
 
-			const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+			const token = jwt.sign({ userId: user.id }, JWT_SECRET as string, { expiresIn: JWT_EXPIRY as any });
 
 			logInfo('User logged in successfully', { userId: user.id });
 
@@ -139,7 +140,7 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response) =
 			throw new ApiError(401, 'Unauthorized');
 		}
 
-		const userRepository = appDataSource.getRepository(User);
+		const userRepository = dataSource.getRepository(User);
 		const user = await userRepository.findOne({ where: { id: userId } });
 
 		if (!user) {
@@ -168,7 +169,7 @@ export const forgotPassword = asyncHandler(
 
 			logInfo('Password reset requested', { email });
 
-			const userRepository = appDataSource.getRepository(User);
+			const userRepository = dataSource.getRepository(User);
 			const user = await userRepository.findOne({ where: { email } });
 
 			if (!user) {
@@ -206,7 +207,7 @@ export const resetPassword = asyncHandler(
 
 			logInfo('Password reset attempt', { token: token.substring(0, 10) + '...' });
 
-			const userRepository = appDataSource.getRepository(User);
+			const userRepository = dataSource.getRepository(User);
 			const user = await userRepository.findOne({ where: { resetToken: token } });
 
 			if (!user) {
@@ -217,7 +218,7 @@ export const resetPassword = asyncHandler(
 			const hashedPassword = await bcrypt.hash(password, saltRounds);
 
 			user.password = hashedPassword;
-			user.resetToken = "";
+			user.resetToken = '';
 			await userRepository.save(user);
 
 			logInfo('Password reset successful', { token: token.substring(0, 10) + '...' });
@@ -246,7 +247,7 @@ export const refreshToken = asyncHandler(
 				throw new ApiError(400, 'Refresh token is required');
 			}
 
-			const userRepository = appDataSource.getRepository(User);
+			const userRepository = dataSource.getRepository(User);
 			const user = await userRepository.findOne({ where: { refreshToken } });
 
 			if (!user) {
@@ -254,7 +255,7 @@ export const refreshToken = asyncHandler(
 			}
 
 			// Generate new access token
-			const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+			const token = jwt.sign({ userId: user.id }, JWT_SECRET as string, { expiresIn: JWT_EXPIRY as any });
 
 			logInfo('Token refreshed successfully', { userId: user.id });
 
@@ -284,8 +285,8 @@ export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
 
 		logInfo('User logout attempt', { userId });
 
-		const userRepository = appDataSource.getRepository(User);
-		await userRepository.update(userId, { refreshToken: "" });
+		const userRepository = dataSource.getRepository(User);
+		await userRepository.update(userId, { refreshToken: '' });
 
 		logInfo('User logged out successfully', { userId });
 

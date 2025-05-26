@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
+import { Device } from '../../../../shared/src';
+import { dataSource } from '../../config/database';
+import { logError, logInfo } from '../../services/logger.service';
 import { RegisterDeviceBody } from './device.schema';
-import { appDataSource, Device } from '../../../../shared/src';
-import { logInfo, logError } from '../../services/logger.service';
 
 export const registerDevice = async (
 	req: Request<Record<string, unknown>, Record<string, unknown>, RegisterDeviceBody>,
@@ -10,11 +11,16 @@ export const registerDevice = async (
 ): Promise<any> => {
 	try {
 		const { pushToken } = req.body;
-    const userId = req.userId;
+		const userId = req.userId;
+
+		if (!userId) {
+			logError('User ID is missing in request', { body: req.body });
+			return res.status(401).json({ error: 'Unauthorized' });
+		}
 
 		logInfo('Device registration attempt', { userId });
 
-		const deviceRepository = appDataSource.getRepository(Device);
+		const deviceRepository = dataSource.getRepository(Device);
 
 		let device = await deviceRepository.findOne({ where: { userId } });
 

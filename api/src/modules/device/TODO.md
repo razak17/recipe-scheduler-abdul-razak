@@ -5,7 +5,7 @@ Backend
 - [x] Pagination
 - [x] Error handling
 - [x] Logging & Monitoring
-- [ ] Authentication
-- [ ] DB optimization
+- [x] Authentication
 - [ ] Testing
+- [ ] DB optimization
 - [ ] CI/CD

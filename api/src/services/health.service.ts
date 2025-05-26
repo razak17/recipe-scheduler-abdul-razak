@@ -1,8 +1,8 @@
-import { appDataSource } from '../../../shared/src';
+import { dataSource } from '../config/database';
 
 export const checkDatabaseConnection = async (): Promise<boolean> => {
 	try {
-		await appDataSource.query('SELECT 1');
+		await dataSource.query('SELECT 1');
 		return true;
 	} catch (error) {
 		return false;

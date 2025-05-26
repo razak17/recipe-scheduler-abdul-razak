@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { ApiError } from './errorHandler';
 import { logError, logInfo } from '../services/logger.service';
-import { appDataSource } from '../../../shared/src';
-import { User } from '../../../shared/src/modules/user/user.model';
+import { dataSource } from '../config/database';
+import { User } from '../../../shared/src/modules/user/user.entity';
 
 declare global {
 	namespace Express {
@@ -34,11 +34,11 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
 			const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
 			req.userId = decoded.userId;
 
-			const userRepository = appDataSource.getRepository(User);
+			const userRepository = dataSource.getRepository(User);
 			const user = await userRepository.findOne({ where: { id: decoded.userId } });
 
 			if (!user) {
-				throw new ApiError(401, 'User not found or deactivated');
+				throw new ApiError(401, 'User not found');
 			}
 
 			req.user = user;
@@ -46,7 +46,9 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
 			logInfo('User authenticated', { userId: user.id });
 			next();
 		} catch (error) {
-			if (error.name === 'TokenExpiredError') {
+			if (error instanceof ApiError) {
+				throw error;
+			} else if (error.name === 'TokenExpiredError') {
 				logError('Token expired', error);
 				throw new ApiError(401, 'Unauthorized - Token expired');
 			} else if (error.name === 'JsonWebTokenError') {

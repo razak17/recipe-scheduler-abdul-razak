@@ -6,10 +6,10 @@ import helmet from 'helmet';
 import eventRoutes from './modules/event/event.route';
 import deviceRoutes from './modules/device/device.route';
 import authRoutes from './modules/auth/auth.route';
-import { appDataSource } from '../../shared/src';
 import { errorHandler } from './middleware/errorHandler';
 import { checkDatabaseConnection } from './services/health.service';
 import { errorLogger, requestLogger } from './middleware/loggingMiddleware';
+import { dataSource } from './config/database';
 
 const app = express();
 
@@ -57,13 +57,15 @@ app.use('/api', deviceRoutes);
 app.use(errorLogger as any);
 app.use(errorHandler as any);
 
-export const initializeApp = async () => {
+export const initializeApp = async (skipDbInit: boolean = false) => {
 	try {
-		await appDataSource.initialize();
-		console.log('Data Source has been initialized!');
+		if (!skipDbInit && !dataSource.isInitialized) {
+			await dataSource.initialize();
+		}
+		console.log(`Data Source has been initialized in ${process.env.NODE_ENV}!`);
 		return app;
 	} catch (error) {
-		console.error('Error during Data Source initialization', error);
+		console.error(`Error during Data Source initialization in ${process.env.ENV}!`, error);
 		throw error;
 	}
 };

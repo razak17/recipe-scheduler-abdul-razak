@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { appDataSource, Event } from '../../../../shared/src';
+import { Event } from '../../../../shared/src';
 import {
 	CreateEventBody,
 	DeleteEventParams,
@@ -11,6 +11,7 @@ import {
 import { ApiError, asyncHandler } from '../../middleware/errorHandler';
 import { logInfo, logError } from '../../services/logger.service';
 import { ZodError } from 'zod';
+import { dataSource } from '../../config/database';
 
 export interface GetEventParamsWithPagination extends GetEventParams {
 	page?: string;
@@ -41,7 +42,7 @@ export const createEvent = asyncHandler(
 				throw new ApiError(400, 'userId is required');
 			}
 
-			const eventRepository = appDataSource.getRepository(Event);
+			const eventRepository = dataSource.getRepository(Event);
 			const event = eventRepository.create({
 				title,
 				eventTime: new Date(eventTime),
@@ -98,7 +99,7 @@ export const getEvents = asyncHandler(
 				throw new ApiError(400, 'userId is required');
 			}
 
-			const eventRepository = appDataSource.getRepository(Event);
+			const eventRepository = dataSource.getRepository(Event);
 
 			const [events, total] = await eventRepository.findAndCount({
 				where: { userId },
@@ -152,7 +153,7 @@ export const updateEvent = asyncHandler(
 				updateData
 			});
 
-			const eventRepository = appDataSource.getRepository(Event);
+			const eventRepository = dataSource.getRepository(Event);
 			const event = await eventRepository.findOne({ where: { id } });
 
 			if (!event) {
@@ -161,7 +162,7 @@ export const updateEvent = asyncHandler(
 					userId,
 					updateData
 				});
-				throw new ApiError(404, 'Event not found');
+				return res.status(404).json({ error: 'Event not found' });
 			}
 
 			if (event.userId !== userId) {
@@ -170,7 +171,7 @@ export const updateEvent = asyncHandler(
 					eventUserId: event.userId,
 					requestUserId: userId
 				});
-				throw new ApiError(403, 'Unauthorized to update this event');
+				return res.status(403).json({ error: 'Unauthorized to update this event' });
 			}
 
 			if (updateData.eventTime) {
@@ -193,7 +194,7 @@ export const updateEvent = asyncHandler(
 				userId
 			});
 
-			return res.json(updatedEvent);
+			return res.status(200).json(updatedEvent);
 		} catch (error) {
 			if (error instanceof ZodError) {
 				logError('Validation error in event update', error, {
@@ -232,7 +233,7 @@ export const deleteEvent = asyncHandler(
 				userId
 			});
 
-			const eventRepository = appDataSource.getRepository(Event);
+			const eventRepository = dataSource.getRepository(Event);
 
 			const event = await eventRepository.findOne({ where: { id } });
 			if (!event) {
@@ -240,7 +241,7 @@ export const deleteEvent = asyncHandler(
 					eventId: id,
 					userId
 				});
-				throw new ApiError(404, 'Event not found');
+				return res.status(404).json({ error: 'Event not found' });
 			}
 
 			if (event.userId !== userId) {
@@ -249,7 +250,7 @@ export const deleteEvent = asyncHandler(
 					eventUserId: event.userId,
 					requestUserId: userId
 				});
-				throw new ApiError(403, 'Unauthorized to delete this event');
+				return res.status(403).json({ error: 'Unauthorized to delete this event' });
 			}
 
 			await eventRepository.delete(id);
@@ -259,7 +260,7 @@ export const deleteEvent = asyncHandler(
 				userId
 			});
 
-			return res.json({
+			return res.status(204).json({
 				message: 'Event deleted successfully'
 			});
 		} catch (error) {
