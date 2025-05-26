@@ -9,7 +9,8 @@ export const registerDevice = async (
 	res: Response
 ): Promise<any> => {
 	try {
-		const { userId, pushToken } = req.body;
+		const { pushToken } = req.body;
+    const userId = req.userId;
 
 		logInfo('Device registration attempt', { userId });
 

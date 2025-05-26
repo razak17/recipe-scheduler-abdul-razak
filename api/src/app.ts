@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import eventRoutes from './modules/event/event.route';
 import deviceRoutes from './modules/device/device.route';
+import authRoutes from './modules/auth/auth.route';
 import { appDataSource } from '../../shared/src';
 import { errorHandler } from './middleware/errorHandler';
 import { checkDatabaseConnection } from './services/health.service';
@@ -49,6 +50,7 @@ app.get('/health', async (_, res) => {
 	res.status(statusCode).json(status);
 });
 
+app.use('/api', authRoutes);
 app.use('/api', eventRoutes);
 app.use('/api', deviceRoutes);
 

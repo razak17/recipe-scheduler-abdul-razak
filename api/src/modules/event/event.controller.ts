@@ -27,7 +27,7 @@ export const createEvent = asyncHandler(
 	) => {
 		try {
 			const { title, eventTime, reminderMinutesBefore } = req.body;
-			const userId = req.query.userId as string;
+			const userId = req.userId;
 
 			logInfo('Creating event', {
 				title,
@@ -82,7 +82,7 @@ export const getEvents = asyncHandler(
 		res: Response
 	) => {
 		try {
-			const userId = req.query.userId as string;
+			const userId = req.userId;
 			const page = parseInt(req.query.page as string) || 1;
 			const limit = parseInt(req.query.limit as string) || 10;
 			const skip = (page - 1) * limit;
@@ -125,7 +125,6 @@ export const getEvents = asyncHandler(
 			});
 		} catch (error) {
 			if (error instanceof ApiError) {
-				// Let asyncHandler handle this
 				throw error;
 			}
 
@@ -145,7 +144,7 @@ export const updateEvent = asyncHandler(
 		try {
 			const { id } = req.params;
 			const updateData = req.body;
-			const userId = req.query.userId as string;
+			const userId = req.userId;
 
 			logInfo('Updating event', {
 				eventId: id,
@@ -206,7 +205,6 @@ export const updateEvent = asyncHandler(
 			}
 
 			if (error instanceof ApiError) {
-				// Let asyncHandler handle this
 				throw error;
 			}
 
@@ -227,7 +225,7 @@ export const deleteEvent = asyncHandler(
 	) => {
 		try {
 			const { id } = req.params;
-			const userId = req.query.userId as string;
+			const userId = req.userId;
 
 			logInfo('Deleting event', {
 				eventId: id,
@@ -261,10 +259,11 @@ export const deleteEvent = asyncHandler(
 				userId
 			});
 
-			return res.status(204).send();
+			return res.json({
+				message: 'Event deleted successfully'
+			});
 		} catch (error) {
 			if (error instanceof ApiError) {
-				// Let asyncHandler handle this
 				throw error;
 			}
 
