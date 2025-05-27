@@ -12,6 +12,16 @@ const connection = {
 	port: parseInt(process.env.REDIS_PORT || '6379')
 };
 
+async function initializeDataSource() {
+	try {
+		await appDataSource.initialize();
+		console.log('Data Source has been initialized!');
+	} catch (err) {
+		console.error('Error during Data Source initialization', err);
+		throw err;
+	}
+}
+
 async function sendPushNotification(userId: string, title: string, eventTime: string) {
 	try {
 		const deviceRepository = appDataSource.getRepository(Device);
@@ -56,6 +66,7 @@ async function sendPushNotification(userId: string, title: string, eventTime: st
 				console.error('Error sending push notification:', error);
 			}
 		}
+
 		// Handle any errors
 		for (const ticket of tickets) {
 			if (ticket.status === 'error') {
@@ -69,24 +80,17 @@ async function sendPushNotification(userId: string, title: string, eventTime: st
 
 async function startWorker() {
 	try {
-		appDataSource
-			.initialize()
-			.then(() => {
-				console.log('Data Source has been initialized for worker!');
-			})
-			.catch((err) => {
-				console.error('Error during Data Source initialization', err);
-			});
+		await initializeDataSource();
 
 		const worker = new Worker(
 			'reminders',
 			async (job) => {
-				const { eventId, userId, title, eventTime } = job.data as ReminderJob;
-				console.log(`Processing reminder for event ${eventId}`);
+				const { id, userId, title, eventTime } = job.data as ReminderJob;
+				console.log(`Processing reminder for event ${id}`);
 
 				await sendPushNotification(userId, title, eventTime);
 
-				console.log(`Reminder sent for event ${eventId}`);
+				console.log(`Reminder sent for event ${id}`);
 			},
 			{ connection }
 		);

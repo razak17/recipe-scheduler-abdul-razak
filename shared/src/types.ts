@@ -1,5 +1,5 @@
 export interface ReminderJob {
-	eventId: string;
+	id: string;
 	userId: string;
 	title: string;
 	eventTime: string;
