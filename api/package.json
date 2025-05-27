@@ -6,11 +6,11 @@
 		"start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register build/server.js",
 		"dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
 		"debug": "nodemon --watch src --inspect=0.0.0.0:9229 --exec 'ts-node' src/server.ts",
-		"test": "jest",
+		"test": "jest --detectOpenHandles",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
 		"test:debug": "nodemon --watch src --inspect=0.0.0.0:9229 --exec 'ts-node -r tsconfig-paths/register' src/server.ts",
-		"test:integration": "jest tests/integration",
+		"test:integration": "jest __tests__/integration",
 		"lint": "eslint . --ext .ts",
 		"lint:fix": "eslint . --ext .ts --fix"
 	},

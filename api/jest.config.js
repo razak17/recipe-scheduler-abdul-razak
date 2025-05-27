@@ -16,5 +16,5 @@ module.exports = {
 			statements: 80
 		}
 	},
-	setupFilesAfterEnv: ['./src/tests/setup.ts']
+	setupFilesAfterEnv: ['./src/__tests__/setup.ts']
 };

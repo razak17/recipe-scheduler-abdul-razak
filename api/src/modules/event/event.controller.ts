@@ -96,7 +96,7 @@ export const getEventsHandler = asyncHandler(
 
 			logInfo('Events fetched successfully', {
 				userId,
-				count: events.events.length,
+				count: events.items.length,
 				total: events.total,
 				page
 			});
@@ -227,7 +227,7 @@ export const deleteEventHandler = asyncHandler(
 
 			logInfo('Event deleted successfully', { eventId: id, userId });
 
-			return res.status(204).json({ message: 'Event deleted successfully' });
+			return res.status(200).json({ message: 'Event deleted successfully' });
 		} catch (error) {
 			if (error instanceof ApiError) {
 				throw error;

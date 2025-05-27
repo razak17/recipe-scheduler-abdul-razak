@@ -1,4 +1,4 @@
-import { Event } from '@shared';
+import { Event } from '../../../../shared/src';
 import { dataSource } from '../../config/database';
 import { CreateEventBody, UpdateEventBody } from './event.schema';
 
@@ -30,7 +30,7 @@ export async function getEventsByUserId({
 	page: number;
 	limit: number;
 	skip?: number;
-}): Promise<{ events: Event[]; total: number }> {
+}): Promise<{ items: Event[]; total: number }> {
 	const repo = dataSource.getRepository(Event);
 	const [events, total] = await repo.findAndCount({
 		where: { userId },
@@ -38,7 +38,7 @@ export async function getEventsByUserId({
 		skip,
 		take: limit
 	});
-	return { events, total };
+	return { items: events, total };
 }
 
 export async function getEventById(id: string): Promise<Event | null> {
