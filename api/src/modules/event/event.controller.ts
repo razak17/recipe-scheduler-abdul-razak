@@ -1,50 +1,41 @@
-import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { Event } from '../../../../shared/src';
-import { dataSource } from '../../config/database';
 import { ApiError, asyncHandler } from '../../middleware/errorHandler';
 import { logError, logInfo } from '../../services/logger.service';
 import { CreateEventBody, UpdateEventBody } from './event.schema';
+import {
+	createEvent,
+	deleteEvent,
+	getEventById,
+	getEventsByUserId,
+	updateEvent
+} from './event.service';
 
-export interface GetEventParamsWithPagination {
-	page?: string;
-	limit?: string;
-}
-
-dotenv.config();
-const DEFAULT_REMINDER_MINUTES = parseInt(process.env.REMINDER_LEAD_MINUTES || '15');
-
-export const createEvent = asyncHandler(
+export const createEventHandler = asyncHandler(
 	async (
 		req: Request<Record<string, unknown>, Record<string, unknown>, CreateEventBody>,
 		res: Response
 	) => {
 		try {
-			const { title, eventTime, reminderMinutesBefore } = req.body;
 			const userId = req.userId;
-
-			logInfo('Creating event', {
-				title,
-				eventTime,
-				reminderMinutesBefore,
-				userId
-			});
 
 			if (!userId) {
 				logError('Missing userId in createEvent request', null, { body: req.body });
 				throw new ApiError(400, 'userId is required');
 			}
 
-			const eventRepository = dataSource.getRepository(Event);
-			const event = eventRepository.create({
-				title,
-				eventTime: new Date(eventTime),
-				userId,
-				reminderMinutesBefore: reminderMinutesBefore || DEFAULT_REMINDER_MINUTES
-			});
+			const { title, eventTime, reminderMinutesBefore } = req.body;
 
-			await eventRepository.save(event);
+			const newEvent = {
+				title,
+				eventTime,
+				reminderMinutesBefore,
+				userId
+			};
+
+			logInfo('Creating event', newEvent);
+
+			const event = await createEvent(newEvent);
 
 			logInfo('Event created successfully', { eventId: event.id, userId });
 
@@ -57,11 +48,9 @@ export const createEvent = asyncHandler(
 				});
 				return res.status(400).json({ error: error.errors });
 			}
-
 			if (error instanceof ApiError) {
 				throw error;
 			}
-
 			logError('Failed to create event', error, {
 				body: req.body,
 				userId: req.query.userId
@@ -71,9 +60,16 @@ export const createEvent = asyncHandler(
 	}
 );
 
-export const getEvents = asyncHandler(
+export const getEventsHandler = asyncHandler(
 	async (
-		req: Request<GetEventParamsWithPagination, Record<string, unknown>, Record<string, unknown>>,
+		req: Request<
+			{
+				page?: string;
+				limit?: string;
+			},
+			Record<string, unknown>,
+			Record<string, unknown>
+		>,
 		res: Response
 	) => {
 		try {
@@ -82,47 +78,42 @@ export const getEvents = asyncHandler(
 			const limit = parseInt(req.query.limit as string) || 10;
 			const skip = (page - 1) * limit;
 
-			logInfo('Fetching events', {
-				userId,
-				page,
-				limit
-			});
-
 			if (!userId) {
 				logError('Missing userId in getEvents request', null, { query: req.query });
 				throw new ApiError(400, 'userId is required');
 			}
 
-			const eventRepository = dataSource.getRepository(Event);
+			const params = {
+				userId,
+				page,
+				limit,
+				skip
+			};
 
-			const [events, total] = await eventRepository.findAndCount({
-				where: { userId },
-				order: { eventTime: 'ASC' },
-				skip,
-				take: limit
-			});
+			logInfo('Fetching events', params);
+
+			const events = await getEventsByUserId(params);
 
 			logInfo('Events fetched successfully', {
 				userId,
-				count: events.length,
-				total,
+				count: events.events.length,
+				total: events.total,
 				page
 			});
 
 			return res.json({
 				events,
 				pagination: {
-					total,
+					total: events.total,
 					page,
 					limit,
-					pages: Math.ceil(total / limit)
+					pages: Math.ceil(events.total / limit)
 				}
 			});
 		} catch (error) {
 			if (error instanceof ApiError) {
 				throw error;
 			}
-
 			logError('Failed to fetch events', error, {
 				query: req.query
 			});
@@ -131,7 +122,7 @@ export const getEvents = asyncHandler(
 	}
 );
 
-export const updateEvent = asyncHandler(
+export const updateEventHandler = asyncHandler(
 	async (
 		req: Request<Record<string, string>, Record<string, unknown>, UpdateEventBody>,
 		res: Response
@@ -147,8 +138,7 @@ export const updateEvent = asyncHandler(
 				updateData
 			});
 
-			const eventRepository = dataSource.getRepository(Event);
-			const event = await eventRepository.findOne({ where: { id } });
+			const event = await getEventById(id);
 
 			if (!event) {
 				logError('Event not found for update', null, {
@@ -172,8 +162,7 @@ export const updateEvent = asyncHandler(
 				updateData.eventTime = new Date(updateData.eventTime).toISOString();
 			}
 
-			await eventRepository.update(id, updateData);
-			const updatedEvent = await eventRepository.findOne({ where: { id } });
+			const updatedEvent = await updateEvent(id, updateData);
 
 			if (updatedEvent && (updateData.eventTime || updateData.reminderMinutesBefore !== undefined)) {
 				logInfo('Event updated with new time or reminder settings', {
@@ -183,10 +172,7 @@ export const updateEvent = asyncHandler(
 				});
 			}
 
-			logInfo('Event updated successfully', {
-				eventId: id,
-				userId
-			});
+			logInfo('Event updated successfully', { eventId: id, userId });
 
 			return res.status(200).json(updatedEvent);
 		} catch (error) {
@@ -198,11 +184,9 @@ export const updateEvent = asyncHandler(
 				});
 				return res.status(400).json({ error: error.errors });
 			}
-
 			if (error instanceof ApiError) {
 				throw error;
 			}
-
 			logError('Failed to update event', error, {
 				eventId: req.params.id,
 				body: req.body,
@@ -213,7 +197,7 @@ export const updateEvent = asyncHandler(
 	}
 );
 
-export const deleteEvent = asyncHandler(
+export const deleteEventHandler = asyncHandler(
 	async (
 		req: Request<Record<string, string>, Record<string, unknown>, Record<string, unknown>>,
 		res: Response
@@ -222,19 +206,11 @@ export const deleteEvent = asyncHandler(
 			const { id } = req.params;
 			const userId = req.userId;
 
-			logInfo('Deleting event', {
-				eventId: id,
-				userId
-			});
+			logInfo('Deleting event', { eventId: id, userId });
 
-			const eventRepository = dataSource.getRepository(Event);
-
-			const event = await eventRepository.findOne({ where: { id } });
+			const event = await getEventById(id);
 			if (!event) {
-				logError('Event not found for deletion', null, {
-					eventId: id,
-					userId
-				});
+				logError('Event not found for deletion', null, { eventId: id, userId });
 				return res.status(404).json({ error: 'Event not found' });
 			}
 
@@ -247,21 +223,15 @@ export const deleteEvent = asyncHandler(
 				return res.status(403).json({ error: 'Unauthorized to delete this event' });
 			}
 
-			await eventRepository.delete(id);
+			await deleteEvent(id);
 
-			logInfo('Event deleted successfully', {
-				eventId: id,
-				userId
-			});
+			logInfo('Event deleted successfully', { eventId: id, userId });
 
-			return res.status(204).json({
-				message: 'Event deleted successfully'
-			});
+			return res.status(204).json({ message: 'Event deleted successfully' });
 		} catch (error) {
 			if (error instanceof ApiError) {
 				throw error;
 			}
-
 			logError('Failed to delete event', error, {
 				eventId: req.params.id,
 				userId: req.query.userId

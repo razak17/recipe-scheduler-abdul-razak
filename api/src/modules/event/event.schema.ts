@@ -6,6 +6,7 @@ const createEventSchema = {
 		eventTime: string().refine((val) => !isNaN(Date.parse(val)), {
 			message: 'Invalid ISO date format'
 		}),
+    userId: string().min(1, 'User ID is required'),
 		reminderMinutesBefore: number().min(1).optional().default(15)
 	})
 };
