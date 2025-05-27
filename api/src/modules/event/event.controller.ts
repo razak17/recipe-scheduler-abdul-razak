@@ -1,19 +1,13 @@
-import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { Event } from '../../../../shared/src';
-import {
-	CreateEventBody,
-	DeleteEventParams,
-	GetEventParams,
-	UpdateEventBody,
-	UpdateEventParams
-} from './event.schema';
-import { ApiError, asyncHandler } from '../../middleware/errorHandler';
-import { logInfo, logError } from '../../services/logger.service';
+import { Request, Response } from 'express';
 import { ZodError } from 'zod';
+import { Event } from '../../../../shared/src';
 import { dataSource } from '../../config/database';
+import { ApiError, asyncHandler } from '../../middleware/errorHandler';
+import { logError, logInfo } from '../../services/logger.service';
+import { CreateEventBody, UpdateEventBody } from './event.schema';
 
-export interface GetEventParamsWithPagination extends GetEventParams {
+export interface GetEventParamsWithPagination {
 	page?: string;
 	limit?: string;
 }
@@ -139,7 +133,7 @@ export const getEvents = asyncHandler(
 
 export const updateEvent = asyncHandler(
 	async (
-		req: Request<UpdateEventParams, Record<string, unknown>, UpdateEventBody>,
+		req: Request<Record<string, string>, Record<string, unknown>, UpdateEventBody>,
 		res: Response
 	) => {
 		try {
@@ -221,7 +215,7 @@ export const updateEvent = asyncHandler(
 
 export const deleteEvent = asyncHandler(
 	async (
-		req: Request<DeleteEventParams, Record<string, unknown>, Record<string, unknown>>,
+		req: Request<Record<string, string>, Record<string, unknown>, Record<string, unknown>>,
 		res: Response
 	) => {
 		try {

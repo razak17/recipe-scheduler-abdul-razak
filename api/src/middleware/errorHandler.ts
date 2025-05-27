@@ -37,11 +37,11 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 		});
 	}
 
-  logError('API Error', err, {
-    path: req.path,
-    method: req.method,
-    requestId: req.headers['x-request-id']
-  });
+	logError('API Error', err, {
+		path: req.path,
+		method: req.method,
+		requestId: req.headers['x-request-id']
+	});
 
 	return res.status(500).json({
 		status: 'error',
@@ -49,6 +49,9 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 	});
 };
 
-export const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
-	Promise.resolve(fn(req, res, next)).catch(next);
-};
+type ExpressMiddleware = (req: Request, res: Response, next: NextFunction) => Promise<any> | any;
+
+export const asyncHandler =
+	(fn: ExpressMiddleware) => (req: Request, res: Response, next: NextFunction) => {
+		Promise.resolve(fn(req, res, next)).catch(next);
+	};

@@ -1,17 +1,17 @@
 import * as bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
-import { Express } from 'express';
+// import { Express } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { Event, User } from '../../../../shared/src';
-import { initializeApp } from '../../app';
-import { dataSource } from '../../config/database';
+import { connectDB, dataSource } from '../../config/database';
+import app from '../../app';
 
 dotenv.config({ path: '.env.test' });
 
 export let testUserId: string;
 export let authToken: string;
-export let app: Express;
+// export let app: Express;
 
 export const setupTestUser = async () => {
 	const userRepository = dataSource.getRepository(User);
@@ -42,11 +42,12 @@ export const cleanupTestData = async (entityName: string, criteria: any) => {
 };
 
 describe('Event API Integration Tests', () => {
-	let app: Express;
+	// let app: any;
 	let createdEventId: string;
 
 	beforeAll(async () => {
-		app = await initializeApp(true);
+		await connectDB(true);
+		// app = import('../../app')
 		await setupTestUser();
 	});
 
