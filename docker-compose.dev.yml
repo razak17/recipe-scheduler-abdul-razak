@@ -24,6 +24,7 @@ services:
   networks:
    - app-network
   command: npm run dev
+  working_dir: /app/api
   restart: unless-stopped
 
  # Worker Service - Development Mode
@@ -43,6 +44,7 @@ services:
   networks:
    - app-network
   command: npm run dev
+  working_dir: /app/worker
   restart: unless-stopped
 
  # Redis Service (for BullMQ)

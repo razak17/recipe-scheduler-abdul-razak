@@ -7,7 +7,6 @@ dotenv.config();
 
 const expo = new Expo();
 
-// Initialize Redis connection
 const connection = {
 	host: process.env.REDIS_HOST || 'localhost',
 	port: parseInt(process.env.REDIS_PORT || '6379')
@@ -73,7 +72,7 @@ async function startWorker() {
 		appDataSource
 			.initialize()
 			.then(() => {
-				console.log('Data Source has been initialized!');
+				console.log('Data Source has been initialized for worker!');
 			})
 			.catch((err) => {
 				console.error('Error during Data Source initialization', err);
