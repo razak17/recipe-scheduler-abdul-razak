@@ -102,7 +102,7 @@ export const getEventsHandler = asyncHandler(
 			});
 
 			return res.json({
-				events,
+				events: events.items,
 				pagination: {
 					total: events.total,
 					page,

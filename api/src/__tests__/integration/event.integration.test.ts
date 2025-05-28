@@ -88,12 +88,12 @@ describe('Event API Integration Tests', () => {
 			expect(response.status).toBe(200);
 			expect(response.body).toHaveProperty('events');
 			expect(response.body).toHaveProperty('pagination');
-			expect(Array.isArray(response.body.events.items)).toBe(true);
+			expect(Array.isArray(response.body.events)).toBe(true);
 
 			// Should contain our newly created event
-			expect(response.body.events.items.length).toBeGreaterThan(0);
+			expect(response.body.events.length).toBeGreaterThan(0);
 
-			const event = response.body.events.items.find((e: Event) => e.id === createdEventId);
+			const event = response.body.events.find((e: Event) => e.id === createdEventId);
 			expect(event).toBeDefined();
 			expect(event.title).toBe(testEvent.title);
 
@@ -135,7 +135,7 @@ describe('Event API Integration Tests', () => {
 				.set('Authorization', `Bearer ${authToken}`);
 
 			expect(checkResponse.status).toBe(200);
-			const deletedEvent = checkResponse.body.events.items.find((e: Event) => e.id === createdEventId);
+			const deletedEvent = checkResponse.body.events.find((e: Event) => e.id === createdEventId);
 			expect(deletedEvent).toBeUndefined();
 		});
 	});
@@ -172,10 +172,10 @@ describe('Event API Integration Tests', () => {
 				.set('Authorization', `Bearer ${authToken}`);
 
 			expect(response.status).toBe(200);
-			expect(response.body.events.items.length).toBeGreaterThanOrEqual(3);
+			expect(response.body.events.length).toBeGreaterThanOrEqual(3);
 
 			// Check if events are sorted by eventTime in ascending order
-			const events = response.body.events.items;
+			const events = response.body.events;
 			for (let i = 0; i < events.length - 1; i++) {
 				const currentEventTime = new Date(events[i].eventTime).getTime();
 				const nextEventTime = new Date(events[i + 1].eventTime).getTime();
@@ -191,7 +191,7 @@ describe('Event API Integration Tests', () => {
 				.query({ page: 1, limit: 2 });
 
 			expect(response1.status).toBe(200);
-			expect(response1.body.events.items.length).toBe(2);
+			expect(response1.body.events.length).toBe(2);
 			expect(response1.body.pagination.page).toBe(1);
 			expect(response1.body.pagination.limit).toBe(2);
 
@@ -205,8 +205,8 @@ describe('Event API Integration Tests', () => {
 			expect(response2.body.pagination.page).toBe(2);
 
 			// Ensure we got different events on different pages
-			const firstPageIds = response1.body.events.items.map((e: Event) => e.id);
-			const secondPageIds = response2.body.events.items.map((e: Event) => e.id);
+			const firstPageIds = response1.body.events.map((e: Event) => e.id);
+			const secondPageIds = response2.body.events.map((e: Event) => e.id);
 
 			secondPageIds.forEach((id: string) => {
 				expect(firstPageIds).not.toContain(id);

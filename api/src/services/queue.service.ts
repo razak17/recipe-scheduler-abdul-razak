@@ -24,7 +24,8 @@ export class QueueService {
 	async scheduleReminder(event: IEvent): Promise<void> {
 		const { id, eventTime, reminderMinutesBefore = 15 } = event;
 		try {
-			const reminderTime = new Date(eventTime.getTime() - reminderMinutesBefore);
+			const reminderTime = new Date(eventTime);
+			reminderTime.setMinutes(reminderTime.getMinutes() - reminderMinutesBefore);
 			const delay = Math.max(0, reminderTime.getTime() - Date.now());
 
 			await this.queue.add(

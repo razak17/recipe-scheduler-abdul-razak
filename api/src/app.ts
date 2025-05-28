@@ -30,7 +30,7 @@ const apiLimiter = rateLimit({
 
 app.use('/api', apiLimiter);
 
-app.get('/health', async (_, res) => {
+app.get('/api/health', async (_, res) => {
 	const dbStatus = await checkDatabaseConnection();
 
 	const status = {

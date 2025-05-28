@@ -7,7 +7,7 @@ import { ReminderJob } from '../../../shared/src/types';
 const expo = new Expo();
 
 export const notificationWorker = async (job: Job) => {
-	const event = job.data as ReminderJob;
+	const event = job.data.event as ReminderJob;
 
 	try {
 		const deviceRepo = dataSource.getRepository(Device);
