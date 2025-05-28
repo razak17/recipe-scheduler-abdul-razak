@@ -4,7 +4,7 @@ const createEventSchema = {
 	body: object({
 		title: string().min(1, 'Title is required'),
 		eventTime: string().refine((val) => !isNaN(Date.parse(val)), {
-			message: 'Invalid ISO date format'
+			message: 'Event time must be in the future'
 		}),
     userId: string().min(1, 'User ID is required'),
 		reminderMinutesBefore: number().min(1).optional().default(15)
