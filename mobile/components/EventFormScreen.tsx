@@ -13,7 +13,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { createEvent, Event } from '../services/api';
+import { createEvent, RecipeEvent } from '../services/api';
 
 const USER_ID = '12345'; // In a real app, this would come from authentication
 

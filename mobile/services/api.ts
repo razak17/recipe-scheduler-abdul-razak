@@ -1,64 +1,133 @@
+import { API_URL, TOKEN } from '@/constants/api';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { Alert } from 'react-native';
 
-// Get the API URL from the environment variables
-const API_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:8000/api';
+const apiURL = Constants.expoConfig?.extra?.apiUrl || API_URL;
+const authToken = TOKEN;
+
+export interface RecipeEvent {
+	id: string;
+	userId: string;
+	title: string;
+	eventTime: string;
+	createdAt: string;
+}
 
 const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+	baseURL: apiURL,
+	headers: {
+		'Content-Type': 'application/json',
+		// Ngrok free tier requires this header
+		'ngrok-skip-browser-warning': 'true',
+		Authorization: `Bearer ${authToken}`
+	}
 });
 
-export interface Event {
-  id: string;
-  userId: string;
-  title: string;
-  eventTime: string;
-  createdAt: string;
-}
+api.interceptors.request.use((config) => {
+	console.log('Making request to:', config.url);
+	return config;
+});
 
-export interface CreateEventPayload {
-  userId: string;
-  title: string;
-  eventTime: string;
-}
+api.interceptors.response.use(
+	(response) => {
+		console.log('Response from:', response.config.url);
+		return response;
+	},
+	(error) => {
+		let errorMessage = 'Something went wrong';
+		let showAlert = false;
+		let alertTitle = 'Error';
 
-export interface UpdateEventPayload {
-  title?: string;
-  eventTime?: string;
-}
+		if (error.response) {
+			const responseData = error.response.data;
 
-export interface DevicePayload {
-  userId: string;
-  pushToken: string;
-}
+			if (typeof responseData === 'string') {
+				errorMessage = responseData;
+			} else if (responseData?.error) {
+				errorMessage = responseData.error;
+			} else if (responseData?.message) {
+				errorMessage = responseData.message;
+			} else if (responseData?.errors) {
+				errorMessage = (responseData.errors as { message: string }[]).map((e) => e.message).join('\n');
+			} else {
+				errorMessage = `Server error: ${error.response.status}`;
+			}
 
-export const getEvents = async (userId: string): Promise<Event[]> => {
-  const response = await api.get<Event[]>(`/events?userId=${userId}`);
-  return response.data;
+			if (
+				errorMessage.toLowerCase().includes('future') ||
+				errorMessage.toLowerCase().includes('date') ||
+				errorMessage.toLowerCase().includes('time')
+			) {
+				errorMessage = 'Please select a future date and time';
+			}
+
+			showAlert = true;
+		} else if (error.request) {
+			errorMessage = 'No response from server - please check your connection';
+			alertTitle = 'Connection Error';
+			showAlert = true;
+		} else {
+			errorMessage = error.message || 'Failed to process request';
+		}
+
+		console.error('API Error:', errorMessage, error.config?.url);
+
+		const apiError = new Error(errorMessage);
+
+		if (showAlert) {
+			Alert.alert(alertTitle, errorMessage, [{ text: 'OK' }]);
+		}
+
+		return Promise.reject(apiError);
+	}
+);
+
+export const registerDevice = async (pushToken: string) => {
+	try {
+		const response = await api.post('/devices', { pushToken });
+		return response.data;
+	} catch (error) {
+		console.error('Failed to register device token:', error);
+		throw error;
+	}
 };
 
-export const createEvent = async (payload: CreateEventPayload): Promise<Event> => {
-  const {userId, title, eventTime} = payload
-  const response = await api.post<Event>(`/events?userId=${userId}`, {
-    title,
-    eventTime,
-  });
-  return response.data;
+export const getEvents = async () => {
+	try {
+		const response = await api.get<{ events: RecipeEvent[] }>('/events');
+		return response.data?.events || [];
+	} catch (error) {
+		console.error('Failed to fetch events:', error);
+		throw error;
+	}
 };
 
-export const updateEvent = async (id: string, payload: UpdateEventPayload): Promise<Event> => {
-  const response = await api.patch<Event>(`/events/${id}`, payload);
-  return response.data;
+export const createEvent = async (event: Omit<RecipeEvent, 'id' | 'createdAt' | 'userId'>) => {
+	try {
+		const response = await api.post<RecipeEvent>('/events', event);
+		return response.data;
+	} catch (error) {
+		console.error('Failed to create event:', error);
+		throw error;
+	}
 };
 
-export const deleteEvent = async (id: string): Promise<void> => {
-  await api.delete(`/events/${id}`);
+export const updateEvent = async (id: string, updates: Partial<RecipeEvent>) => {
+	try {
+		const response = await api.patch<RecipeEvent>(`/events/${id}`, updates);
+		return response.data;
+	} catch (error) {
+		console.error('Failed to update event:', error);
+		throw error;
+	}
 };
 
-export const registerDevice = async (payload: DevicePayload): Promise<void> => {
-  await api.post('/devices', payload);
+export const deleteEvent = async (id: string) => {
+	try {
+		await api.delete(`/events/${id}`);
+	} catch (error) {
+		console.error('Failed to delete event:', error);
+		throw error;
+	}
 };
-

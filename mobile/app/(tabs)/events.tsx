@@ -23,7 +23,7 @@ export default function Index() {
 				}
 			}}
 		>
-			<Stack.Screen name='Events' component={EventsScreen} options={{ title: 'Cooking Events' }} />
+			<Stack.Screen name='Events' component={EventsScreen} options={{ title: 'Events' }} />
 			<Stack.Screen name='EventForm' component={EventFormScreen} options={{ title: 'New Event' }} />
 			<Stack.Screen
 				name='EventDetail'

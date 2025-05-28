@@ -1,68 +1,38 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-	StyleSheet,
-	View,
-	Text,
-	FlatList,
-	TouchableOpacity,
-	ActivityIndicator,
-	Alert
-} from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Swipeable } from 'react-native-gesture-handler';
-import { getEvents, deleteEvent, Event } from '../services/api';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-const USER_ID = '12345'; // In a real app, this would come from authentication
+import { useEvents } from '@/services/events';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { RecipeEvent } from '../services/api';
+import { Loading } from './Loading';
 
 export const EventsScreen = () => {
-	const [events, setEvents] = useState<Event[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { events, loading, deleteEvent, refetch } = useEvents();
 	const navigation = useNavigation();
 	const colorScheme = useColorScheme();
 
-	const fetchEvents = async () => {
-		try {
-			setLoading(true);
-			const data = await getEvents(USER_ID);
-      if (data && data.length) {
-        setEvents(data);
-      }
-		} catch (error) {
-			console.error('Error fetching events:', error);
-			Alert.alert('Error', 'Failed to load events. Please try again.');
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useFocusEffect(
-		useCallback(() => {
-			fetchEvents();
-		}, [])
-	);
-
-	const handleDelete = async (id: string) => {
-		try {
-			await deleteEvent(id);
-			setEvents(events.filter((event) => event.id !== id));
-		} catch (error) {
-			console.error('Error deleting event:', error);
-			Alert.alert('Error', 'Failed to delete event. Please try again.');
-		}
-	};
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('focus', () => {
+			refetch();
+		});
+		return unsubscribe;
+	}, [navigation]);
 
 	const confirmDelete = (id: string) => {
 		Alert.alert('Confirm Delete', 'Are you sure you want to delete this event?', [
 			{ text: 'Cancel', style: 'cancel' },
-			{ text: 'Delete', style: 'destructive', onPress: () => handleDelete(id) }
+			{ text: 'Delete', style: 'destructive', onPress: () => deleteEvent(id) }
 		]);
 	};
 
 	const renderRightActions = (id: string) => {
 		return (
 			<TouchableOpacity
-				style={[styles.deleteButton, { backgroundColor: colorScheme === 'dark' ? '#ff6b6b' : '#ff4757' }]}
+				style={[
+					styles.deleteButton,
+					{ backgroundColor: colorScheme === 'dark' ? '#ff6b6b' : '#ff4757' }
+				]}
 				onPress={() => confirmDelete(id)}
 			>
 				<Text style={styles.deleteText}>Delete</Text>
@@ -81,7 +51,7 @@ export const EventsScreen = () => {
 		});
 	};
 
-	const renderItem = ({ item }: { item: Event }) => (
+	const renderItem = ({ item }: { item: RecipeEvent }) => (
 		<Swipeable renderRightActions={() => renderRightActions(item.id)}>
 			<TouchableOpacity
 				style={[styles.eventItem, { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }]}
@@ -98,9 +68,11 @@ export const EventsScreen = () => {
 	);
 
 	return (
-		<View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}>
+		<View
+			style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}
+		>
 			{loading ? (
-				<ActivityIndicator size='large' color={colorScheme === 'dark' ? '#fff' : '#000'} />
+				<Loading />
 			) : (
 				<>
 					{events.length === 0 ? (

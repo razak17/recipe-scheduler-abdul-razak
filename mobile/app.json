@@ -8,15 +8,28 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      },
+      "bundleIdentifier": "com.ar17.recipe-scheduler",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.ar17.recipe_scheduler",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -24,14 +37,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-        "expo-router",
+      "expo-router",
       [
-        "expo-splash-screen",
+        "expo-notifications",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ffffff"
         }
       ]
     ],
@@ -39,10 +50,17 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://8f01-154-161-183-81.ngrok-free.app/api",
+      "router": {},
+      "apiUrl": "https://317e-154-161-159-201.ngrok-free.app/api",
       "eas": {
         "projectId": "e4f96804-7084-4d5e-be40-30be33277590"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e4f96804-7084-4d5e-be40-30be33277590"
     }
   }
 }
