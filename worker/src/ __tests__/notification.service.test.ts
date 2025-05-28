@@ -25,7 +25,9 @@ describe('notificationWorker', () => {
 	};
 
 	const mockJob = {
-		data: testJobData
+		data: {
+			event: testJobData
+		}
 	} as Job;
 
 	beforeEach(() => {
@@ -85,7 +87,7 @@ describe('notificationWorker', () => {
 			to: 'not-an-expo-token',
 			title: `Reminder for Test Event`,
 			body: `Test Event at ${formattedTime}`,
-			data: { title: 'Test Event', eventTime: testJobData.eventTime }
+			data: { event: testJobData }
 		});
 		expect(mockSendPushNotificationsAsync).not.toHaveBeenCalled();
 	});

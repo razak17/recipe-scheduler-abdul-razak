@@ -98,7 +98,8 @@ export const getEventsHandler = asyncHandler(
 				userId,
 				count: events.items.length,
 				total: events.total,
-				page
+				page,
+				hasMore: events.total > skip + limit
 			});
 
 			return res.json({
