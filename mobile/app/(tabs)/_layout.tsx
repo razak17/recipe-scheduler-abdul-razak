@@ -2,6 +2,7 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { setupNotificationChannel } from '@/utils/setupNotificationChannel';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { Tabs, useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 export default function TabLayout() {
+	setupNotificationChannel();
 	const colorScheme = useColorScheme();
 	const router = useRouter();
 
@@ -31,10 +33,7 @@ export default function TabLayout() {
 				tabBarButton: HapticTab,
 				tabBarBackground: TabBarBackground,
 				tabBarStyle: Platform.select({
-					ios: {
-						// Use a transparent background on iOS to show the blur effect
-						position: 'absolute'
-					},
+					ios: { position: 'absolute' },
 					default: {}
 				})
 			}}
@@ -42,7 +41,7 @@ export default function TabLayout() {
 			<Tabs.Screen
 				name='events'
 				options={{
-					title: 'Home',
+					title: 'Events',
 					tabBarIcon: ({ color }) => <MaterialIcons color={color} size={28} name='home' />
 				}}
 			/>

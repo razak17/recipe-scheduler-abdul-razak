@@ -93,10 +93,19 @@ export const registerDevice = async (pushToken: string) => {
 	}
 };
 
-export const getEvents = async () => {
+export const getEvents = async (limit = 10, page = 1) => {
 	try {
-		const response = await api.get<{ events: RecipeEvent[] }>('/events');
-		return response.data?.events || [];
+		const response = await api.get<{
+			data: RecipeEvent[];
+			pagination: {
+				total: number;
+				page: number;
+				limit: number;
+				pages: number;
+				hasMore: boolean;
+			};
+		}>('/events', { params: { limit, page } });
+		return response.data;
 	} catch (error) {
 		console.error('Failed to fetch events:', error);
 		throw error;

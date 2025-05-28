@@ -102,12 +102,13 @@ export const getEventsHandler = asyncHandler(
 			});
 
 			return res.json({
-				events: events.items,
+				data: events.items,
 				pagination: {
 					total: events.total,
 					page,
 					limit,
-					pages: Math.ceil(events.total / limit)
+					pages: Math.ceil(events.total / limit),
+					hasMore: events.total > skip + limit
 				}
 			});
 		} catch (error) {

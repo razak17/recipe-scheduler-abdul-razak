@@ -1,14 +1,15 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useEvents } from '@/services/events';
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { ActivityIndicator, Button } from 'react-native-paper';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { RecipeEvent } from '../services/api';
 import { Loading } from './Loading';
 
 export const EventsScreen = () => {
-	const { events, loading, deleteEvent, refetch } = useEvents();
+	const { events, loading, hasMore, loadEvents, deleteEvent, refetch } = useEvents();
 	const navigation = useNavigation();
 	const colorScheme = useColorScheme();
 
@@ -18,6 +19,11 @@ export const EventsScreen = () => {
 		});
 		return unsubscribe;
 	}, [navigation]);
+
+	const loadMoreEvents = useCallback(() => {
+		if (!hasMore || loading) return;
+		loadEvents(8, events.length);
+	}, [hasMore, loading, loadEvents, events.length]);
 
 	const confirmDelete = (id: string) => {
 		Alert.alert('Confirm Delete', 'Are you sure you want to delete this event?', [
@@ -66,16 +72,36 @@ export const EventsScreen = () => {
 			</TouchableOpacity>
 		</Swipeable>
 	);
+	if (loading && events.length === 0) {
+		return <Loading />;
+	}
 
 	return (
 		<View
 			style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}
 		>
-			{loading ? (
-				<Loading />
-			) : (
-				<>
-					{events.length === 0 ? (
+			<>
+				<FlatList
+					data={events}
+					renderItem={renderItem}
+					keyExtractor={(item) => item.id}
+					contentContainerStyle={styles.list}
+					onEndReached={loadMoreEvents}
+					onEndReachedThreshold={0.5}
+					ListFooterComponent={
+						hasMore ? (
+							<View style={{ padding: 20, alignItems: 'center' }}>
+								{loading ? (
+									<ActivityIndicator size='small' />
+								) : (
+									<Button mode='outlined' onPress={loadMoreEvents}>
+										Load More
+									</Button>
+								)}
+							</View>
+						) : null
+					}
+					ListEmptyComponent={
 						<View style={styles.emptyContainer}>
 							<Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#fff' : '#666' }]}>
 								No events scheduled
@@ -84,22 +110,15 @@ export const EventsScreen = () => {
 								Tap the + button to add a new event
 							</Text>
 						</View>
-					) : (
-						<FlatList
-							data={events}
-							renderItem={renderItem}
-							keyExtractor={(item) => item.id}
-							contentContainerStyle={styles.list}
-						/>
-					)}
-					<TouchableOpacity
-						style={[styles.fab, { backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' }]}
-						onPress={() => navigation.navigate('EventForm')}
-					>
-						<Text style={styles.fabText}>+</Text>
-					</TouchableOpacity>
-				</>
-			)}
+					}
+				/>
+				<TouchableOpacity
+					style={[styles.fab, { backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' }]}
+					onPress={() => navigation.navigate('EventForm')}
+				>
+					<Text style={styles.fabText}>+</Text>
+				</TouchableOpacity>
+			</>
 		</View>
 	);
 };

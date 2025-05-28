@@ -12,15 +12,18 @@ export const useEvents = () => {
 	const [events, setEvents] = useState<RecipeEvent[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
+	const [hasMore, setHasMore] = useState(true);
 
-	const loadEvents = async () => {
+	const loadEvents = async (limit: number = 10, page: number = 1) => {
 		try {
 			setLoading(true);
-			const events = await getEventsApi();
-			setEvents(events);
+			const response = await getEventsApi(limit, page);
+			setEvents((prev) => (page === 1 ? response.data : [...prev, ...response.data]));
+			setHasMore(response.pagination?.hasMore ?? false);
 			setError(null);
 		} catch (err) {
 			setError(err instanceof Error ? err : new Error('Failed to load events'));
+			setHasMore(false);
 		} finally {
 			setLoading(false);
 		}
@@ -94,16 +97,18 @@ export const useEvents = () => {
 	};
 
 	const refetch = () => {
-		loadEvents();
+		loadEvents(10, 1);
 	};
 
 	return {
 		events,
 		loading,
 		error,
+		hasMore,
 		createEvent,
 		updateEvent,
 		deleteEvent,
+		loadEvents,
 		refetch
 	};
 };
