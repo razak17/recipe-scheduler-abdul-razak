@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { ApiError } from './errorHandler';
+import { ApiError } from '../utils/errorHandler';
 import { logError, logInfo } from '../services/logger.service';
 import { dataSource } from '../config/database';
 import { User } from '../../../shared/src/modules/user/user.entity';

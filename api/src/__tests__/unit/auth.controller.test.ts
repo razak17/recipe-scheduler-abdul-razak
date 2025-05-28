@@ -1,19 +1,19 @@
 import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import * as authController from '../auth.controller';
-import { loginUser } from '../auth.controller';
-import { dataSource } from '../../../config/database';
+import * as authController from '../../modules/auth/auth.controller';
+import { loginUser } from '../../modules/auth/auth.controller';
+import { dataSource } from '../../config/database';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
-jest.mock('../../../services/logger.service', () => ({
+jest.mock('../../services/logger.service', () => ({
 	logInfo: jest.fn(),
 	logError: jest.fn()
 }));
 
-jest.mock('../../../middleware/errorHandler', () => {
-	const original = jest.requireActual('../../../middleware/errorHandler');
+jest.mock('../../utils/errorHandler', () => {
+	const original = jest.requireActual('../../utils/errorHandler');
 	return {
 		...original,
 		asyncHandler: (fn: Function) => async (req: Request, res: Response, next: NextFunction) => {
@@ -26,7 +26,7 @@ jest.mock('../../../middleware/errorHandler', () => {
 	};
 });
 
-jest.mock('../../../config/database', () => ({
+jest.mock('../../config/database', () => ({
 	dataSource: {
 		getRepository: jest.fn()
 	}

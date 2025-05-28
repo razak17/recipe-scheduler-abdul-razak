@@ -7,7 +7,7 @@ import {
 	resetPassword,
 	refreshToken
 } from './auth.controller';
-import { authenticate } from '../../middleware/authMiddleware';
+import { authenticate } from '../../middleware/auth.middleware';
 
 const router = Router();
 

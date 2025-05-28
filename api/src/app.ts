@@ -5,9 +5,9 @@ import helmet from 'helmet';
 import eventRoutes from './modules/event/event.route';
 import deviceRoutes from './modules/device/device.route';
 import authRoutes from './modules/auth/auth.route';
-import { errorHandler } from './middleware/errorHandler';
+import { errorHandler } from './utils/errorHandler';
 import { checkDatabaseConnection } from './services/health.service';
-import { errorLogger, requestLogger } from './middleware/loggingMiddleware';
+import { errorLogger, requestLogger } from './middleware/logging.middleware';
 
 const app = express();
 

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { dataSource } from '../../config/database';
-import { authenticate } from '../authMiddleware';
+import { authenticate } from '../../middleware/auth.middleware';
 
 jest.mock('jsonwebtoken');
 jest.mock('../../services/logger.service', () => ({

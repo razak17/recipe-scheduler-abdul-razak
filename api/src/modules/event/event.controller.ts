@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { ApiError, asyncHandler } from '../../middleware/errorHandler';
+import { ApiError, asyncHandler } from '../../utils/errorHandler';
 import { logError, logInfo } from '../../services/logger.service';
 import { CreateEventBody, UpdateEventBody } from './event.schema';
 import {

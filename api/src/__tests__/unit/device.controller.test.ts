@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { registerDevice } from '../device.controller';
-import { dataSource } from '../../../config/database';
+import { registerDevice } from '../../modules/device/device.controller';
+import { dataSource } from '../../config/database';
 
-jest.mock('../../../services/logger.service', () => ({
+jest.mock('../../services/logger.service', () => ({
 	logInfo: jest.fn(),
 	logError: jest.fn()
 }));

@@ -9,14 +9,14 @@ import {
 	RefreshTokenBody,
 	ResetPasswordBody
 } from './auth.schema';
-import { ApiError, asyncHandler } from '../../middleware/errorHandler';
+import { ApiError, asyncHandler } from '../../utils/errorHandler';
 import { logInfo, logError } from '../../services/logger.service';
 import { User } from '../../../../shared/src/modules/user/user.entity';
 import crypto from 'crypto';
 import { dataSource } from '../../config/database';
+import { getConfig } from '../../config';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret_change_this_in_production';
-const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d';
+const config = getConfig();
 
 export const registerUser = asyncHandler(
 	async (
@@ -54,7 +54,9 @@ export const registerUser = asyncHandler(
 
 			await userRepository.save(user);
 
-			const token = jwt.sign({ userId: user.id }, JWT_SECRET as string, { expiresIn: JWT_EXPIRY as any });
+			const token = jwt.sign({ userId: user.id }, config.jwtSecret as string, {
+				expiresIn: config.jwtExpiry as any
+			});
 
 			logInfo('User registered successfully', { userId: user.id });
 
@@ -105,7 +107,9 @@ export const loginUser = asyncHandler(
 				throw new ApiError(401, 'Invalid credentials');
 			}
 
-			const token = jwt.sign({ userId: user.id }, JWT_SECRET as string, { expiresIn: JWT_EXPIRY as any });
+			const token = jwt.sign({ userId: user.id }, config.jwtSecret as string, {
+				expiresIn: config.jwtExpiry as any
+			});
 
 			logInfo('User logged in successfully', { userId: user.id });
 
@@ -255,7 +259,9 @@ export const refreshToken = asyncHandler(
 			}
 
 			// Generate new access token
-			const token = jwt.sign({ userId: user.id }, JWT_SECRET as string, { expiresIn: JWT_EXPIRY as any });
+			const token = jwt.sign({ userId: user.id }, config.jwtSecret as string, {
+				expiresIn: config.jwtExpiry as any
+			});
 
 			logInfo('Token refreshed successfully', { userId: user.id });
 
