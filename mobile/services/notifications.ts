@@ -16,20 +16,38 @@ export async function registerForPushNotifications() {
 	}
 }
 
-export async function schedulePushNotification(title: string, body: string, triggerDate: Date) {
+export async function schedulePushNotification(
+	title: string,
+	body: string,
+	triggerDate: Date,
+	eventId?: string
+): Promise<string> {
 	try {
-		await Notifications.scheduleNotificationAsync({
+		const now = new Date();
+		const minFutureTime = new Date(now.getTime() + 60 * 1000);
+
+		if (triggerDate <= minFutureTime) {
+			console.warn('Cannot schedule notification for past or immediate future time');
+			return '';
+		}
+
+		const notificationId = await Notifications.scheduleNotificationAsync({
 			content: {
 				title,
 				body,
-				sound: 'default'
+				sound: 'default',
+				data: {
+					url: eventId ? `/events/${eventId}` : '/events'
+				}
 			},
 			trigger: {
 				type: 'date',
 				date: triggerDate
 			} as Notifications.NotificationTriggerInput
 		});
+		return notificationId;
 	} catch (error) {
 		console.error('Failed to schedule notification:', error);
+		return '';
 	}
 }

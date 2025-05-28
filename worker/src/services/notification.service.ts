@@ -29,7 +29,7 @@ export const notificationWorker = async (job: Job) => {
 				to: device.pushToken,
 				title: `Reminder for ${event.title}`,
 				body: `${event.title} at ${formattedTime}`,
-				data: { title: event.title, eventTime: event.eventTime }
+				data: { event }
 			});
 			return;
 		}
@@ -40,7 +40,7 @@ export const notificationWorker = async (job: Job) => {
 				sound: 'default',
 				title: `Reminder for ${event.title}`,
 				body: `${event.title} at ${formattedTime}`,
-				data: { title: event.title, eventTime: event.eventTime }
+				data: { event }
 			}
 		]);
 

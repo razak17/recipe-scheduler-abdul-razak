@@ -1,21 +1,19 @@
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
+	ActivityIndicator,
+	Alert,
+	Keyboard,
 	StyleSheet,
-	View,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	Keyboard,
-	Alert,
-	ActivityIndicator
+	View
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { createEvent, RecipeEvent } from '../services/api';
-
-const USER_ID = '12345'; // In a real app, this would come from authentication
+import { createEvent } from '../services/api';
 
 export const EventFormScreen = () => {
 	const [title, setTitle] = useState('');
@@ -48,7 +46,6 @@ export const EventFormScreen = () => {
 		try {
 			setIsSubmitting(true);
 			await createEvent({
-				userId: USER_ID,
 				title: title.trim(),
 				eventTime: eventTime.toISOString()
 			});
@@ -74,8 +71,12 @@ export const EventFormScreen = () => {
 
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-			<View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}>
-				<View style={[styles.formContainer, { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }]}>
+			<View
+				style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}
+			>
+				<View
+					style={[styles.formContainer, { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }]}
+				>
 					<Text style={[styles.label, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>Title</Text>
 					<TextInput
 						style={[
@@ -91,12 +92,19 @@ export const EventFormScreen = () => {
 						placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
 					/>
 
-					<Text style={[styles.label, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>Date & Time</Text>
+					<Text style={[styles.label, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+						Date & Time
+					</Text>
 					<TouchableOpacity
-						style={[styles.dateTimeButton, { backgroundColor: colorScheme === 'dark' ? '#444' : '#f0f0f0' }]}
+						style={[
+							styles.dateTimeButton,
+							{ backgroundColor: colorScheme === 'dark' ? '#444' : '#f0f0f0' }
+						]}
 						onPress={showDatePicker}
 					>
-						<Text style={{ color: colorScheme === 'dark' ? '#fff' : '#000' }}>{formatDateTime(eventTime)}</Text>
+						<Text style={{ color: colorScheme === 'dark' ? '#fff' : '#000' }}>
+							{formatDateTime(eventTime)}
+						</Text>
 					</TouchableOpacity>
 
 					<DateTimePickerModal
