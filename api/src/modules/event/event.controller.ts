@@ -124,6 +124,53 @@ export const getEventsHandler = asyncHandler(
 	}
 );
 
+export const getEventByIdHandler = asyncHandler(
+	async (
+		req: Request<Record<string, string>, Record<string, unknown>, Record<string, unknown>>,
+		res: Response
+	) => {
+		try {
+			const { id } = req.params;
+			const userId = req.userId;
+
+			logInfo('Fetching event by ID', { eventId: id, userId });
+
+			if (!userId) {
+				logError('Missing userId in getEventById request', null, { eventId: id });
+				throw new ApiError(400, 'userId is required');
+			}
+
+			const event = await getEventById(id);
+
+			if (!event) {
+				logError('Event not found', null, { eventId: id, userId });
+				return res.status(404).json({ error: 'Event not found' });
+			}
+
+			if (event.userId !== userId) {
+				logError('Unauthorized access to event', null, {
+					eventId: id,
+					eventUserId: event.userId,
+					requestUserId: userId
+				});
+				return res.status(403).json({ error: 'Unauthorized to access this event' });
+			}
+
+			logInfo('Event fetched successfully', { eventId: id, userId });
+
+			return res.status(200).json(event);
+		} catch (error) {
+			if (error instanceof ApiError) {
+				throw error;
+			}
+			logError('Failed to fetch event by ID', error, {
+				eventId: req.params.id,
+				userId: req.query.userId
+			});
+			throw new ApiError(500, 'Failed to fetch event by ID');
+		}
+	}
+);
 export const updateEventHandler = asyncHandler(
 	async (
 		req: Request<Record<string, string>, Record<string, unknown>, UpdateEventBody>,

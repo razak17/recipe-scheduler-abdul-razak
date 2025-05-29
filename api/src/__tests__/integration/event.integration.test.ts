@@ -104,6 +104,17 @@ describe('Event API Integration Tests', () => {
 			expect(response.body.pagination).toHaveProperty('pages');
 		});
 
+		test('GET /api/events/:id - Get event by ID', async () => {
+			const response = await request(app)
+				.get(`/api/events/${createdEventId}`)
+				.set('Authorization', `Bearer ${authToken}`);
+
+			expect(response.status).toBe(200);
+			expect(response.body).toHaveProperty('id', createdEventId);
+			expect(response.body.title).toBe(testEvent.title);
+			expect(response.body.userId).toBe(testUserId);
+		});
+
 		test('PATCH /api/events/:id - Update an existing event', async () => {
 			const updateData = {
 				title: 'Updated Test Event',
