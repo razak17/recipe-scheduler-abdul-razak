@@ -4,18 +4,25 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
-	setupNotificationChannel();
 	const colorScheme = useColorScheme();
-	const [loaded] = useFonts({
+	const router = useRouter();
+
+	const [loaded, error] = useFonts({
 		SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf')
 	});
-	const router = useRouter();
+
+	useEffect(() => {
+		setupNotificationChannel();
+	}, []);
 
 	useEffect(() => {
 		const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -26,10 +33,16 @@ export default function RootLayout() {
 		});
 
 		return () => subscription.remove();
-	}, []);
+	}, [router]);
 
-	if (!loaded) {
-		// Async font loading only occurs in development.
+	// Handle font loading and splash screen
+	useEffect(() => {
+		if (loaded || error) {
+			SplashScreen.hideAsync();
+		}
+	}, [loaded, error]);
+
+	if (!loaded && !error) {
 		return null;
 	}
 

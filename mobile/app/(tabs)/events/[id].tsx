@@ -1,30 +1,45 @@
-import React, { useState } from 'react';
-import {
-	StyleSheet,
-	View,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	Alert,
-	ActivityIndicator
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { Loader } from '@/components/Loader';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { updateEvent, deleteEvent, RecipeEvent } from '../services/api';
+import { useRecipeEvent, useRecipeEvents } from '@/hooks/useRecipeEvents';
+import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
-export const EventDetailScreen = () => {
-	const route = useRoute();
-	const event = route.params?.event as RecipeEvent;
-
-	const [title, setTitle] = useState(event.title);
-	const [eventTime, setEventTime] = useState(new Date(event.eventTime));
-	const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-	const [isUpdating, setIsUpdating] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
-
+export default function EventDetailScreen() {
+	const { id } = useLocalSearchParams();
+	const { loading: isModifying, updateEvent, deleteEvent } = useRecipeEvents();
+	const { event, loading } = useRecipeEvent(id as string);
 	const navigation = useNavigation();
 	const colorScheme = useColorScheme();
+
+	const [title, setTitle] = useState('');
+	const [eventTime, setEventTime] = useState(new Date());
+	const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (event) {
+				setTitle(event.title);
+				setEventTime(new Date(event.eventTime));
+			}
+		}, [event])
+	);
+
+	if (!event) return null;
+
+	const hasChanges = () => {
+		return event && (event.title !== title.trim() || event.eventTime !== eventTime.toISOString());
+	};
 
 	const showDatePicker = () => {
 		setDatePickerVisibility(true);
@@ -46,7 +61,6 @@ export const EventDetailScreen = () => {
 		}
 
 		try {
-			setIsUpdating(true);
 			await updateEvent(event.id, {
 				title: title.trim(),
 				eventTime: eventTime.toISOString()
@@ -56,21 +70,16 @@ export const EventDetailScreen = () => {
 		} catch (error) {
 			console.error('Error updating event:', error);
 			Alert.alert('Error', 'Failed to update event. Please try again.');
-		} finally {
-			setIsUpdating(false);
 		}
 	};
 
 	const handleDelete = async () => {
 		try {
-			setIsDeleting(true);
 			await deleteEvent(event.id);
 			navigation.goBack();
 		} catch (error) {
 			console.error('Error deleting event:', error);
 			Alert.alert('Error', 'Failed to delete event. Please try again.');
-		} finally {
-			setIsDeleting(false);
 		}
 	};
 
@@ -90,6 +99,10 @@ export const EventDetailScreen = () => {
 			minute: '2-digit'
 		});
 	};
+
+	if (loading) {
+		return <Loader />;
+	}
 
 	return (
 		<View
@@ -141,12 +154,12 @@ export const EventDetailScreen = () => {
 					style={[
 						styles.updateButton,
 						{ backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' },
-						isUpdating && styles.disabledButton
+						isModifying && styles.disabledButton
 					]}
 					onPress={handleUpdate}
-					disabled={isUpdating || isDeleting}
+					disabled={isModifying || !hasChanges()}
 				>
-					{isUpdating ? (
+					{isModifying ? (
 						<ActivityIndicator color='#fff' size='small' />
 					) : (
 						<Text style={styles.buttonText}>Update Event</Text>
@@ -157,17 +170,17 @@ export const EventDetailScreen = () => {
 					style={[
 						styles.deleteButton,
 						{ backgroundColor: colorScheme === 'dark' ? '#cf6679' : '#ff4757' },
-						isDeleting && styles.disabledButton
+						isModifying && styles.disabledButton
 					]}
 					onPress={confirmDelete}
-					disabled={isDeleting || isUpdating}
+					disabled={isModifying}
 				>
 					<Text style={styles.buttonText}>Delete Event</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
 	);
-};
+}
 
 const styles = StyleSheet.create({
 	container: {

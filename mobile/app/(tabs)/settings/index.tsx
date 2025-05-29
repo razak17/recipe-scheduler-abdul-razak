@@ -1,15 +1,8 @@
-import React from 'react';
-import {
-	StyleSheet,
-	View,
-	Text,
-	Switch,
-	ScrollView,
-	Appearance
-} from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import React from 'react';
+import { Appearance, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
-export const SettingsScreen = () => {
+export default function SettingsTab() {
 	const colorScheme = useColorScheme();
 	const isDarkMode = colorScheme === 'dark';
 
@@ -42,7 +35,7 @@ export const SettingsScreen = () => {
 			</View>
 		</ScrollView>
 	);
-};
+}
 
 const styles = StyleSheet.create({
 	container: {

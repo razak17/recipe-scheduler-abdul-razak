@@ -112,6 +112,16 @@ export const getEvents = async (limit = 10, page = 1) => {
 	}
 };
 
+export const getEventById = async (id: string) => {
+	try {
+		const response = await api.get<RecipeEvent>(`/events/${id}`);
+		return response.data;
+	} catch (error) {
+		console.error('Failed to fetch event by ID:', error);
+		throw error;
+	}
+};
+
 export const createEvent = async (event: Omit<RecipeEvent, 'id' | 'createdAt' | 'userId'>) => {
 	try {
 		const response = await api.post<RecipeEvent>('/events', event);

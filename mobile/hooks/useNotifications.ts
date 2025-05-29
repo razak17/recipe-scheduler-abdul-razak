@@ -5,6 +5,10 @@ interface AppNotification {
 	title: string;
 	body: string;
 	timestamp: string;
+  data?: {
+    url?: string;
+    [key: string]: any;
+  };
 }
 
 export const useNotifications = () => {

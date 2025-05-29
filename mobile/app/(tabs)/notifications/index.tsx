@@ -1,13 +1,13 @@
+import { Loader } from '@/components/Loader';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useNotifications } from '@/hooks/useNotifications';
 import { registerForPushNotifications } from '@/services/notifications';
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';
-import { Loading } from './Loading';
-import { useNotifications } from '@/hooks/useNotifications';
 
-export const NotificationsScreen = () => {
+export default function NotificationsTab() {
 	const colorScheme = useColorScheme();
 	const { notifications, loading, error } = useNotifications();
 	const [permissionStatus, setPermissionStatus] = useState<Notifications.PermissionStatus>();
@@ -37,7 +37,7 @@ export const NotificationsScreen = () => {
 	};
 
 	if (loading) {
-		return <Loading />;
+		return <Loader />;
 	}
 
 	if (error) {
@@ -54,13 +54,6 @@ export const NotificationsScreen = () => {
 			</SafeAreaView>
 		);
 	}
-
-	const formatTime = (date: Date) => {
-		return date.toLocaleTimeString('en-US', {
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	};
 
 	const renderItem = ({ item }: { item: Notification }) => (
 		<View
@@ -107,7 +100,7 @@ export const NotificationsScreen = () => {
 			/>
 		</SafeAreaView>
 	);
-};
+}
 
 const styles = StyleSheet.create({
 	container: {

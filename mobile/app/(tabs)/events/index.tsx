@@ -1,24 +1,25 @@
+import { Loader } from '@/components/Loader';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useEvents } from '@/services/events';
-import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect } from 'react';
-import { ActivityIndicator, Button } from 'react-native-paper';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRecipeEvents } from '@/hooks/useRecipeEvents';
+import { RecipeEvent } from '@/services/api';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Link, router, useFocusEffect } from 'expo-router';
+import React, { useCallback } from 'react';
+import { Alert, FlatList, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { RecipeEvent } from '../services/api';
-import { Loading } from './Loading';
+import { ActivityIndicator, Button } from 'react-native-paper';
 
-export const EventsScreen = () => {
-	const { events, loading, hasMore, loadEvents, deleteEvent, refetch } = useEvents();
-	const navigation = useNavigation();
+export default function EventsScreen() {
+	const { events, loading, hasMore, loadEvents, deleteEvent, refetch } = useRecipeEvents();
 	const colorScheme = useColorScheme();
 
-	useEffect(() => {
-		const unsubscribe = navigation.addListener('focus', () => {
+	useFocusEffect(
+		useCallback(() => {
 			refetch();
-		});
-		return unsubscribe;
-	}, [navigation]);
+		}, [])
+	);
 
 	const loadMoreEvents = useCallback(() => {
 		if (!hasMore || loading) return;
@@ -41,7 +42,8 @@ export const EventsScreen = () => {
 				]}
 				onPress={() => confirmDelete(id)}
 			>
-				<Text style={styles.deleteText}>Delete</Text>
+				<MaterialIcons name='delete' size={24} color='white' />
+				<ThemedText style={styles.deleteText}>Delete</ThemedText>
 			</TouchableOpacity>
 		);
 	};
@@ -59,69 +61,69 @@ export const EventsScreen = () => {
 
 	const renderItem = ({ item }: { item: RecipeEvent }) => (
 		<Swipeable renderRightActions={() => renderRightActions(item.id)}>
-			<TouchableOpacity
+			<Pressable
 				style={[styles.eventItem, { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }]}
-				onPress={() => navigation.navigate('EventDetail', { event: item })}
+				onPress={() => router.push(`/events/${item.id}`)}
 			>
-				<Text style={[styles.eventTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+				<ThemedText style={styles.eventTitle} lightColor='#000' darkColor='#fff'>
 					{item.title}
-				</Text>
-				<Text style={[styles.eventTime, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
+				</ThemedText>
+				<ThemedText style={styles.eventTime} lightColor='#666' darkColor='#ccc'>
 					{formatDateTime(item.eventTime)}
-				</Text>
-			</TouchableOpacity>
+				</ThemedText>
+			</Pressable>
 		</Swipeable>
 	);
+
 	if (loading && events.length === 0) {
-		return <Loading />;
+		return <Loader />;
 	}
 
 	return (
-		<View
-			style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}
-		>
-			<>
-				<FlatList
-					data={events}
-					renderItem={renderItem}
-					keyExtractor={(item) => item.id}
-					contentContainerStyle={styles.list}
-					onEndReached={loadMoreEvents}
-					onEndReachedThreshold={0.5}
-					ListFooterComponent={
-						hasMore ? (
-							<View style={{ padding: 20, alignItems: 'center' }}>
-								{loading ? (
-									<ActivityIndicator size='small' />
-								) : (
-									<Button mode='outlined' onPress={loadMoreEvents}>
-										Load More
-									</Button>
-								)}
-							</View>
-						) : null
-					}
-					ListEmptyComponent={
-						<View style={styles.emptyContainer}>
-							<Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#fff' : '#666' }]}>
-								No events scheduled
-							</Text>
-							<Text style={[styles.emptySubText, { color: colorScheme === 'dark' ? '#ccc' : '#999' }]}>
-								Tap the + button to add a new event
-							</Text>
-						</View>
-					}
-				/>
-				<TouchableOpacity
-					style={[styles.fab, { backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' }]}
-					onPress={() => navigation.navigate('EventForm')}
-				>
-					<Text style={styles.fabText}>+</Text>
-				</TouchableOpacity>
-			</>
-		</View>
+		<ThemedView style={[styles.container]}>
+			<FlatList
+				data={events}
+				renderItem={renderItem}
+				keyExtractor={(item) => item.id}
+				contentContainerStyle={styles.list}
+				onEndReached={loadMoreEvents}
+				onEndReachedThreshold={0.5}
+				ListFooterComponent={
+					hasMore ? (
+						<ThemedView style={{ padding: 20, alignItems: 'center' }}>
+							{loading ? (
+								<ActivityIndicator size='small' />
+							) : (
+								<Button mode='outlined' onPress={loadMoreEvents}>
+									Load More
+								</Button>
+							)}
+						</ThemedView>
+					) : null
+				}
+				ListEmptyComponent={
+					<ThemedView style={styles.emptyContainer}>
+						<MaterialIcons name='event' size={64} color={colorScheme === 'dark' ? '#666' : '#ccc'} />
+						<ThemedText style={styles.emptyText} lightColor='#000' darkColor='#fff'>
+							No events scheduled
+						</ThemedText>
+						<ThemedText style={styles.emptySubText} lightColor='#999' darkColor='#666'>
+							Tap the + button to add a new event
+						</ThemedText>
+					</ThemedView>
+				}
+			/>
+
+			<TouchableOpacity
+				style={[styles.fab, { backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' }]}
+			>
+				<Link href='/events/new' asChild>
+					<ThemedText style={styles.fabText}>+</ThemedText>
+				</Link>
+			</TouchableOpacity>
+		</ThemedView>
 	);
-};
+}
 
 const styles = StyleSheet.create({
 	container: {

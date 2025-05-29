@@ -1,14 +1,46 @@
 import { useState, useEffect } from 'react';
 import {
 	getEvents as getEventsApi,
+	getEventById as getEventByIdApi,
 	createEvent as createEventApi,
 	updateEvent as updateEventApi,
 	deleteEvent as deleteEventApi,
 	RecipeEvent
-} from './api';
-import { schedulePushNotification } from './notifications';
+} from '../services/api';
+import { schedulePushNotification } from '../services/notifications';
 
-export const useEvents = () => {
+export const useRecipeEvent = (id: string) => {
+	const [event, setEvent] = useState<RecipeEvent | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<Error | null>(null);
+
+	const loadEvent = async (id: string) => {
+		try {
+			setLoading(true);
+			const response = await getEventByIdApi(id);
+			setEvent(response);
+			setError(null);
+		} catch (err) {
+			setError(err instanceof Error ? err : new Error('Failed to load event'));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		if (event) {
+			console.log('Event updated:', event);
+		}
+	}, [event]);
+
+	useEffect(() => {
+		loadEvent(id);
+	}, [id]);
+
+	return { event, loading, error, loadEvent };
+};
+
+export const useRecipeEvents = () => {
 	const [events, setEvents] = useState<RecipeEvent[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);

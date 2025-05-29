@@ -1,21 +1,21 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { createEvent } from '@/services/api';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-	ActivityIndicator,
-	Alert,
-	Keyboard,
-	StyleSheet,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	TouchableWithoutFeedback,
-	View
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { createEvent } from '../services/api';
 
-export const EventFormScreen = () => {
+export default function NewEventScreen() {
 	const [title, setTitle] = useState('');
 	const [eventTime, setEventTime] = useState(new Date());
 	const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -135,7 +135,7 @@ export const EventFormScreen = () => {
 			</View>
 		</TouchableWithoutFeedback>
 	);
-};
+}
 
 const styles = StyleSheet.create({
 	container: {

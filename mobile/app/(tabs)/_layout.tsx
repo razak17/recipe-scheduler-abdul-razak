@@ -2,28 +2,12 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { setupNotificationChannel } from '@/utils/setupNotificationChannel';
 import { MaterialIcons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
-import { Tabs, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 
 export default function TabLayout() {
-	setupNotificationChannel();
 	const colorScheme = useColorScheme();
-	const router = useRouter();
-
-	useEffect(() => {
-		const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-			const url = response.notification.request.content.data?.url;
-			if (url && typeof url === 'string') {
-				router.push(url as any);
-			}
-		});
-
-		return () => subscription.remove();
-	}, []);
 
 	return (
 		<Tabs
@@ -48,7 +32,7 @@ export default function TabLayout() {
 			<Tabs.Screen
 				name='notifications'
 				options={{
-					title: 'notifications',
+					title: 'Notifications',
 					tabBarIcon: ({ color }) => <MaterialIcons color={color} size={28} name='notifications' />
 				}}
 			/>
