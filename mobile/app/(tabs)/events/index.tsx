@@ -5,7 +5,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRecipeEvents } from '@/hooks/useRecipeEvents';
 import { RecipeEvent } from '@/services/api';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Link, router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -114,13 +114,19 @@ export default function EventsScreen() {
 				}
 			/>
 
-			<TouchableOpacity
-				style={[styles.fab, { backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' }]}
+			<Pressable
+				style={({ pressed }) => [
+					styles.fab,
+					{
+						backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee',
+						opacity: pressed ? 0.8 : 1,
+						transform: [{ scale: pressed ? 0.95 : 1 }]
+					}
+				]}
+				onPress={() => router.push('/events/new')}
 			>
-				<Link href='/events/new' asChild>
-					<ThemedText style={styles.fabText}>+</ThemedText>
-				</Link>
-			</TouchableOpacity>
+				<MaterialIcons name='add' size={24} color='white' />
+			</Pressable>
 		</ThemedView>
 	);
 }
@@ -130,7 +136,8 @@ const styles = StyleSheet.create({
 		flex: 1
 	},
 	list: {
-		padding: 16
+		padding: 16,
+		paddingBottom: 100
 	},
 	eventItem: {
 		padding: 16,

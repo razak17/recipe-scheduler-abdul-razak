@@ -1,3 +1,5 @@
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import { Appearance, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
@@ -12,9 +14,9 @@ export default function SettingsTab() {
 			contentContainerStyle={styles.contentContainer}
 		>
 			<View style={[styles.section, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
-				<Text style={[styles.sectionTitle, { color: isDarkMode ? '#fff' : '#000' }]}>Appearance</Text>
+				<ThemedText style={styles.sectionTitle}>Appearance</ThemedText>
 				<View style={styles.setting}>
-					<Text style={[styles.settingText, { color: isDarkMode ? '#fff' : '#000' }]}>Dark Mode</Text>
+					<ThemedText style={styles.settingText}>Dark Mode</ThemedText>
 					<Switch
 						value={isDarkMode}
 						onChange={() => {
@@ -27,10 +29,14 @@ export default function SettingsTab() {
 			</View>
 
 			<View style={[styles.section, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
-				<Text style={[styles.sectionTitle, { color: isDarkMode ? '#fff' : '#000' }]}>About</Text>
-				<Text style={[styles.aboutText, { color: isDarkMode ? '#ccc' : '#666' }]}>
+				<ThemedText style={styles.sectionTitle}>About</ThemedText>
+				<ThemedText
+          style={styles.aboutText}
+          lightColor="#666"
+          darkColor="#ccc"
+        >
 					Recipe Scheduler App
-				</Text>
+				</ThemedText>
 				<Text style={[styles.versionText, { color: isDarkMode ? '#aaa' : '#999' }]}>Version 1.0.0</Text>
 			</View>
 		</ScrollView>
