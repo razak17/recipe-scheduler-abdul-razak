@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-	getEvents as getEventsApi,
-	getEventById as getEventByIdApi,
 	createEvent as createEventApi,
-	updateEvent as updateEventApi,
 	deleteEvent as deleteEventApi,
-	RecipeEvent
+	getEventById as getEventByIdApi,
+	getEvents as getEventsApi,
+	RecipeEvent,
+	updateEvent as updateEventApi
 } from '../services/api';
 import { schedulePushNotification } from '../services/notifications';
 
@@ -69,8 +69,7 @@ export const useRecipeEvents = () => {
 		loadEvents();
 	}, []);
 
-	const createEvent = async (event: Omit<RecipeEvent, 'id' | 'createdAt'>) => {
-		// Declare tempId outside the try-catch block
+	const createEvent = async (event: Omit<RecipeEvent, 'id' | 'createdAt' | 'userId'>) => {
 		const tempId = Date.now().toString(); // Temporary ID for optimistic update
 
 		try {
@@ -82,7 +81,6 @@ export const useRecipeEvents = () => {
 
 			setEvents((prev) => [...prev, optimisticEvent]);
 
-			// Actual API call
 			const newEvent = await createEventApi({ ...event });
 
 			// Replace optimistic update with real data
@@ -121,11 +119,22 @@ export const useRecipeEvents = () => {
 		const reminderTime = new Date(event.eventTime);
 		reminderTime.setMinutes(reminderTime.getMinutes() - 15);
 
-		await schedulePushNotification(
-			`Reminder: ${event.title}`,
-			`Starts at ${new Date(event.eventTime).toLocaleString()}`,
-			reminderTime
-		);
+		const now = new Date();
+		if (reminderTime <= now) {
+			console.warn('Event time is too soon to schedule reminder');
+			return;
+		}
+
+		try {
+			await schedulePushNotification(
+				`Reminderfor ${event.title}`,
+				`${event.title} at ${new Date(event.eventTime).toLocaleString()}`,
+				reminderTime,
+				event.id
+			);
+		} catch (error) {
+			console.error('Failed to schedule reminder:', error);
+		}
 	};
 
 	const refetch = () => {

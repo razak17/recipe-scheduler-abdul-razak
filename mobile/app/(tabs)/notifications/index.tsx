@@ -1,4 +1,6 @@
 import { Loader } from '@/components/Loader';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useNotifications } from '@/hooks/useNotifications';
 import { registerForPushNotifications } from '@/services/notifications';
@@ -55,24 +57,8 @@ export default function NotificationsTab() {
 		);
 	}
 
-	const renderItem = ({ item }: { item: Notification }) => (
-		<View
-			style={[styles.notificationItem, { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }]}
-		>
-			<Text style={[styles.notificationTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-				{item.title}
-			</Text>
-			<Text style={[styles.notificationBody, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
-				{item.body}
-			</Text>
-			{item.data?.url && <Text style={styles.notificationLink}>Event: {item.data.url}</Text>}
-		</View>
-	);
-
 	return (
-		<SafeAreaView
-			style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}
-		>
+		<ThemedView style={[styles.container]}>
 			{permissionStatus !== 'granted' && (
 				<View style={styles.permissionBanner}>
 					<Text style={styles.permissionText}>
@@ -85,6 +71,21 @@ export default function NotificationsTab() {
 			)}
 			<FlatList
 				data={notifications}
+				contentContainerStyle={styles.list}
+				renderItem={({ item }) => (
+					<View
+						style={[
+							styles.notificationItem,
+							{ backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }
+						]}
+					>
+						<ThemedText style={styles.notificationTitle}>{item.title}</ThemedText>
+						<Text style={[styles.notificationBody, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
+							{item.body}
+						</Text>
+						{item.data?.url && <Text style={styles.notificationLink}>Event: {item.data.url}</Text>}
+					</View>
+				)}
 				ListEmptyComponent={
 					<View style={styles.emptyContainer}>
 						<Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#fff' : '#666' }]}>
@@ -95,10 +96,8 @@ export default function NotificationsTab() {
 						</Text>
 					</View>
 				}
-				renderItem={renderItem}
-				contentContainerStyle={styles.list}
 			/>
-		</SafeAreaView>
+		</ThemedView>
 	);
 }
 

@@ -5,20 +5,21 @@ import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+	ActivityIndicator,
+	Alert,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 export default function EventDetailScreen() {
 	const { id } = useLocalSearchParams();
-	const { loading: isModifying, updateEvent, deleteEvent } = useRecipeEvents();
+	const { updateEvent, deleteEvent } = useRecipeEvents();
 	const { event, loading } = useRecipeEvent(id as string);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const navigation = useNavigation();
 	const colorScheme = useColorScheme();
 
@@ -61,25 +62,30 @@ export default function EventDetailScreen() {
 		}
 
 		try {
+			setIsSubmitting(true);
 			await updateEvent(event.id, {
 				title: title.trim(),
 				eventTime: eventTime.toISOString()
 			});
-
 			navigation.goBack();
 		} catch (error) {
 			console.error('Error updating event:', error);
 			Alert.alert('Error', 'Failed to update event. Please try again.');
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
 	const handleDelete = async () => {
 		try {
+			setIsSubmitting(true);
 			await deleteEvent(event.id);
 			navigation.goBack();
 		} catch (error) {
 			console.error('Error deleting event:', error);
 			Alert.alert('Error', 'Failed to delete event. Please try again.');
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -154,12 +160,12 @@ export default function EventDetailScreen() {
 					style={[
 						styles.updateButton,
 						{ backgroundColor: colorScheme === 'dark' ? '#bb86fc' : '#6200ee' },
-						isModifying && styles.disabledButton
+						isSubmitting && styles.disabledButton
 					]}
 					onPress={handleUpdate}
-					disabled={isModifying || !hasChanges()}
+					disabled={isSubmitting || !hasChanges()}
 				>
-					{isModifying ? (
+					{isSubmitting ? (
 						<ActivityIndicator color='#fff' size='small' />
 					) : (
 						<Text style={styles.buttonText}>Update Event</Text>
@@ -170,10 +176,10 @@ export default function EventDetailScreen() {
 					style={[
 						styles.deleteButton,
 						{ backgroundColor: colorScheme === 'dark' ? '#cf6679' : '#ff4757' },
-						isModifying && styles.disabledButton
+						isSubmitting && styles.disabledButton
 					]}
 					onPress={confirmDelete}
-					disabled={isModifying}
+					disabled={isSubmitting}
 				>
 					<Text style={styles.buttonText}>Delete Event</Text>
 				</TouchableOpacity>

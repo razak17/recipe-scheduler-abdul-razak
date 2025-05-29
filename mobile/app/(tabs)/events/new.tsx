@@ -1,17 +1,19 @@
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { createEvent } from '@/services/api';
+import { useRecipeEvents } from '@/hooks/useRecipeEvents';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+	ActivityIndicator,
+	Alert,
+	Keyboard,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	TouchableWithoutFeedback,
+	View
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
@@ -20,6 +22,7 @@ export default function NewEventScreen() {
 	const [eventTime, setEventTime] = useState(new Date());
 	const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { createEvent } = useRecipeEvents();
 
 	const navigation = useNavigation();
 	const colorScheme = useColorScheme();
@@ -71,13 +74,11 @@ export default function NewEventScreen() {
 
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-			<View
-				style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#121212' : '#f5f5f5' }]}
-			>
+			<ThemedView style={styles.container}>
 				<View
 					style={[styles.formContainer, { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' }]}
 				>
-					<Text style={[styles.label, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>Title</Text>
+					<ThemedText style={styles.label}>Title</ThemedText>
 					<TextInput
 						style={[
 							styles.input,
@@ -132,7 +133,7 @@ export default function NewEventScreen() {
 						)}
 					</TouchableOpacity>
 				</View>
-			</View>
+			</ThemedView>
 		</TouchableWithoutFeedback>
 	);
 }

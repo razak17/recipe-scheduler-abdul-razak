@@ -8,7 +8,7 @@ const authToken = TOKEN;
 
 export interface RecipeEvent {
 	id: string;
-	userId: string;
+	userId?: string;
 	title: string;
 	eventTime: string;
 	createdAt: string;
